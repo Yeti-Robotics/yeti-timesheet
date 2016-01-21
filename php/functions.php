@@ -15,4 +15,17 @@ function addTeam($db, $teamNumber, $teamName) {
     return true;
 }
 
+function getTeams($db) {
+    $query = "SELECT * FROM team";
+    if($result = $db->query($query)) {
+        $teams = [];
+        while ($row = $result->fetch_assoc()) {
+            $teams[] = $row;
+        }
+        return $teams;
+    } else {
+        return false;
+    }
+}
+
 ?>

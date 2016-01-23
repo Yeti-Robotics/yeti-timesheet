@@ -7,17 +7,17 @@ header("Content-Type: application/json");
 
 $response = [];
 
-if (isset($_POST["team_number"]) && isset($_POST["team_name"])) {
-    $success = addTeam($db, $_POST["team_number"], $_POST["team_name"]);
+if (isset($_POST["user_id"])) {
+    $success = addTimelog($db, $_POST["user_id"]);
     if ($success) {
         http_response_code(201);
     } else {
         http_response_code(500);
-        $response["error"] = "Error adding team.";
+        $response["error"] = "Error adding log.";
     }
 } else {
     http_response_code(400);
-    $response["error"] = "Team name name and team number are required.";
+    $response["error"] = "User ID is required.";
 }
 
 echo json_encode($response);

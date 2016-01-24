@@ -8,7 +8,8 @@ header("Content-Type: application/json");
 $response = [];
 
 if (isset($_POST["user_name"]) && isset($_POST["team_number"]) && isset($_POST["user_email"])
-    && isset($_POST["user_password"]) && isset($_POST["user_mentor"])) {
+    && isset($_POST["user_password"]) && isset($_POST["user_mentor"]) && isset($_POST["user_password_confirm"])
+    && $_POST["user_password"] == $_POST["user_password_confirm"]) {
     $userNumber = 0;
     if (isset($_POST["user_number"])) {
         $userNumber = $_POST["user_number"];

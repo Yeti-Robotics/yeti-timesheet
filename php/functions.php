@@ -51,27 +51,6 @@ function getTeams($db) {
 }
 
 function addUser($db, $userNumber, $userName, $teamNumber, $userEmail, $userPassword, $userAdmin, $userMentor) {
-    if (!$userNumber) {
-        // assign a number
-        $query = "SELECT user_id FROM user WHERE team_number = ?";
-        $result = executeSelect($db, $query, "i", $teamNumber);
-        $numbers = [];
-        $highest = 0;
-        while ($row = $result->fetch_assoc()) {
-            $number = explode("-", $row["user_id"])[1];
-            $numbers[$number] = 1;
-            if ($number > $highest) {
-                $highest = $number;
-            }
-        }
-        $counter = 1;
-        while (!$userNumber) {
-            if (!isset($numbers[$counter]) || $counter > $highest) {
-                $userNumber = $counter;
-            }
-            $counter += 1;
-        }
-    }
     $query = "INSERT INTO user (user_id, user_name, team_number, user_email, user_password, user_admin, user_mentor)
                 VALUES (?, ?, ?, ?, ?, ?, ?)";
     return executeQuery($db, $query, "ssissii",

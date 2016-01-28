@@ -7,7 +7,7 @@ header("Content-Type: application/json");
 
 $response = [];
 $logs = getLastTimelogs($db, 5);
-if($logs) {
+if(is_array($logs)) {
     $response['timelogs'] = $logs;
 } else {
     http_response_code(500);

@@ -17,7 +17,7 @@ for ($i = 0; $i < count($filterNames); $i++) {
     }
 }
 $logs = getTimelogs($db, $filters);
-if($logs) {
+if(is_array($logs)) {
     $response['timelogs'] = $logs;
 } else {
     http_response_code(500);

@@ -11,7 +11,7 @@ if (isset($_POST['team_number'])) {
     $teamNumber = $_POST['team_number'];
 }
 $users = getUsers($db, $teamNumber);
-if($users) {
+if(is_array($users)) {
     $response['users'] = $users;
 } else {
     http_response_code(500);

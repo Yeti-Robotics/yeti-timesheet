@@ -30,6 +30,22 @@ function executeSelect($db, $query, ...$bindParamArgs) {
     return false;
 }
 
+function idTaken($db, $userId) {
+    $query = "SELECT COUNT(*) > 0 AS taken FROM user WHERE user_id = ?";
+    $result = executeSelect($db, $query, "s", $userId);
+    if ($result) {
+        $taken = false;
+        while ($row = $result->fetch_assoc()) {
+            if ($row["taken"]) {
+                $taken = (boolean) $row["taken"];
+            }
+        }
+        return $taken;
+    } else {
+        return null;
+    }
+}
+
 function addTeam($db, $teamNumber, $teamName) {
     $query = "INSERT INTO team (team_number, team_name)
                 VALUES (?, ?)";

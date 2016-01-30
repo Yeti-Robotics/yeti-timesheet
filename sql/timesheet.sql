@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: 127.0.0.1
--- Generation Time: Jan 21, 2016 at 01:22 AM
+-- Generation Time: Jan 30, 2016 at 06:35 PM
 -- Server version: 10.1.8-MariaDB
 -- PHP Version: 5.6.14
 
@@ -21,6 +21,19 @@ SET time_zone = "+00:00";
 --
 CREATE DATABASE IF NOT EXISTS `timesheet` DEFAULT CHARACTER SET latin1 COLLATE latin1_swedish_ci;
 USE `timesheet`;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `session`
+--
+
+DROP TABLE IF EXISTS `session`;
+CREATE TABLE `session` (
+  `session_id` int(11) NOT NULL,
+  `user_id` varchar(20) NOT NULL,
+  `session_key` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
 
@@ -69,6 +82,13 @@ CREATE TABLE `user` (
 --
 
 --
+-- Indexes for table `session`
+--
+ALTER TABLE `session`
+  ADD PRIMARY KEY (`session_id`),
+  ADD KEY `user_id` (`user_id`);
+
+--
 -- Indexes for table `team`
 --
 ALTER TABLE `team`
@@ -95,6 +115,11 @@ ALTER TABLE `user`
 --
 
 --
+-- AUTO_INCREMENT for table `session`
+--
+ALTER TABLE `session`
+  MODIFY `session_id` int(11) NOT NULL AUTO_INCREMENT;
+--
 -- AUTO_INCREMENT for table `timelog`
 --
 ALTER TABLE `timelog`
@@ -104,16 +129,22 @@ ALTER TABLE `timelog`
 --
 
 --
+-- Constraints for table `session`
+--
+ALTER TABLE `session`
+  ADD CONSTRAINT `session_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
 -- Constraints for table `timelog`
 --
 ALTER TABLE `timelog`
-  ADD CONSTRAINT `timelog_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON UPDATE CASCADE;
+  ADD CONSTRAINT `timelog_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Constraints for table `user`
 --
 ALTER TABLE `user`
-  ADD CONSTRAINT `user_ibfk_1` FOREIGN KEY (`team_number`) REFERENCES `team` (`team_number`) ON UPDATE CASCADE;
+  ADD CONSTRAINT `user_ibfk_1` FOREIGN KEY (`team_number`) REFERENCES `team` (`team_number`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;

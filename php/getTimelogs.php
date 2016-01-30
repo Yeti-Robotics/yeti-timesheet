@@ -20,7 +20,7 @@ for ($i = 0; $i < count($filterNames); $i++) {
 }
 $logs = [];
 if ($hasFilters) {
-    $logs = getTimelogs($db, $filters);
+    $logs = getTimelogs($db, $filters, getSessionKey());
 }
 if(is_array($logs)) {
     $response['timelogs'] = $logs;

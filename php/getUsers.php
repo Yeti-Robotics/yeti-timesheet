@@ -10,7 +10,7 @@ $teamNumber = null;
 if (isset($_POST['team_number'])) {
     $teamNumber = $_POST['team_number'];
 }
-$users = getUsers($db, $teamNumber);
+$users = getUsers($db, $teamNumber, getSessionKey());
 if(is_array($users)) {
     $response['users'] = $users;
 } else {

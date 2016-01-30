@@ -7,8 +7,8 @@ header("Content-Type: application/json");
 
 $response = [];
 
-if (isset($_POST["user_id"])) {
-    $success = addTimelog($db, $_POST["user_id"]);
+if (isset($_POST["user_id"]) && isset($_POST["session_key"])) {
+    $success = addTimelog($db, $_POST["user_id"], getSessionKey());
     if ($success) {
         http_response_code(201);
     } else {

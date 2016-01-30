@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: 127.0.0.1
--- Generation Time: Jan 30, 2016 at 06:35 PM
+-- Generation Time: Jan 30, 2016 at 10:53 PM
 -- Server version: 10.1.8-MariaDB
 -- PHP Version: 5.6.14
 
@@ -86,7 +86,9 @@ CREATE TABLE `user` (
 --
 ALTER TABLE `session`
   ADD PRIMARY KEY (`session_id`),
-  ADD KEY `user_id` (`user_id`);
+  ADD UNIQUE KEY `session_key_2` (`session_key`),
+  ADD KEY `user_id` (`user_id`),
+  ADD KEY `session_key` (`session_key`);
 
 --
 -- Indexes for table `team`

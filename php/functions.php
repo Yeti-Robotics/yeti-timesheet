@@ -1,5 +1,7 @@
 <?php
 
+define("LOG_FILE", "error_log.log");
+
 function executeQuery($db, $query, ...$bindParamArgs) {
     // execute a query
     if ($stmt = $db->prepare($query)) {
@@ -7,9 +9,11 @@ function executeQuery($db, $query, ...$bindParamArgs) {
         $stmt->execute();
         $result = $stmt->get_result();
         if ($stmt->error) {
+            logToFile(LOG_FILE, $stmt->error);
             return false;
         }
     } else {
+        logToFile(LOG_FILE, "Unable to prepare statement with query: $query");
         return false;
     }
     return true;
@@ -26,6 +30,13 @@ function executeSelect($db, $query, ...$bindParamArgs) {
         if ($result) {
             return $result;
         }
+        if ($stmt->error) {
+            logToFile(LOG_FILE, $stmt->error);
+            return false;
+        }
+    } else {
+        logToFile(LOG_FILE, "Unable to prepare statement with query: $query");
+        return false;
     }
     return false;
 }
@@ -46,13 +57,19 @@ function idTaken($db, $userId) {
     }
 }
 
-function addTeam($db, $teamNumber, $teamName) {
+function addTeam($db, $teamNumber, $teamName, $sessionKey) {
+    if (!isAdmin($db, $sessionKey)) {
+        return false;
+    }
     $query = "INSERT INTO team (team_number, team_name)
                 VALUES (?, ?)";
     return executeQuery($db, $query, "is", $teamNumber, $teamName);
 }
 
-function getTeams($db) {
+function getTeams($db, $sessionKey) {
+    if (!isAdmin($db, $sessionKey)) {
+        return false;
+    }
     $query = "SELECT * FROM team";
     $result = executeSelect($db, $query);
     if ($result) {
@@ -66,14 +83,20 @@ function getTeams($db) {
     }
 }
 
-function addUser($db, $userNumber, $userName, $teamNumber, $userEmail, $userPassword, $userAdmin, $userMentor) {
+function addUser($db, $userNumber, $userName, $teamNumber, $userEmail, $userPassword, $userAdmin, $userMentor, $sessionKey) {
+    if (!isAdmin($db, $sessionKey)) {
+        return false;
+    }
     $query = "INSERT INTO user (user_id, user_name, team_number, user_email, user_password, user_admin, user_mentor)
                 VALUES (?, ?, ?, ?, ?, ?, ?)";
     return executeQuery($db, $query, "ssissii",
                         $teamNumber . "-" . $userNumber, $userName, $teamNumber, $userEmail, $userPassword, $userAdmin, $userMentor);
 }
 
-function getUsers($db, $teamNumber) {
+function getUsers($db, $teamNumber, $sessionKey) {
+    if (!isAdmin($db, $sessionKey)) {
+        return false;
+    }
     $query = "SELECT * FROM user";
     $result = null;
     if ($teamNumber != null) {
@@ -92,13 +115,19 @@ function getUsers($db, $teamNumber) {
     }
 }
 
-function addTimelog($db, $userId) {
+function addTimelog($db, $userId, $sessionKey) {
+    if (!isAdmin($db, $sessionKey)) {
+        return false;
+    }
     $query = "INSERT INTO timelog (user_id)
                 VALUES (?)";
     return executeQuery($db, $query, "s", $userId);
 }
 
-function getTimelogs($db, $filters) {
+function getTimelogs($db, $filters, $sessionKey) {
+    if (!isAdmin($db, $sessionKey)) {
+        return false;
+    }
     $filterNames = ["user_name", "user_id", "team_name", "team_number"];
     $query = "SELECT timelog_id, timelog.user_id, timesheet_timestamp, user_name, team_number
                 FROM timelog
@@ -144,7 +173,10 @@ function getTimelogs($db, $filters) {
     }
 }
 
-function getLastTimelogs($db, $limit) {
+function getLastTimelogs($db, $limit, $sessionKey) {
+    if (!isAdmin($db, $sessionKey)) {
+        return false;
+    }
     $query = "SELECT user.user_name,
                 MAX(timelog.timesheet_timestamp) AS 'timesheet_timestamp',
                 COUNT(timelog.timelog_id) % 2 AS 'signed_in'
@@ -177,6 +209,75 @@ function teamSignout($db, $teamNumber) {
                 GROUP BY user_id
                 HAVING COUNT(timelog.timelog_id) % 2 = 1";
     return executeQuery($db, $query, "i", $teamNumber);
+}
+
+function getUserID($db, $sessionKey) {
+    $query = "SELECT user_id FROM session WHERE session_key = ?";
+    $result = executeSelect($db, $query, "s", $sessionKey);
+    $id = false;
+    if ($result) {
+        while ($row = $result->fetch_assoc()) {
+            $id = $row["user_id"];
+        }
+    }
+    return $id;
+}
+
+function isAdmin($db, $sessionKey) {
+    $query = "SELECT user_admin
+                FROM session
+                LEFT JOIN user
+                ON user.user_id = session.user_id
+                WHERE session_key = ?";
+    $result = executeSelect($db, $query, "s", $sessionKey);
+    $isAdmin = false;
+    if ($result) {
+        while ($row = $result->fetch_assoc()) {
+            if ($row["user_admin"]) {
+                $isAdmin = (boolean) $row["user_admin"];
+            }
+        }
+    }
+    if (!$isAdmin) {
+        logToFile(LOG_FILE, "User is not an admin with session key: $sessionKey");
+    }
+    return $isAdmin;
+}
+
+function logToFile($fileName, $message) {
+    $string = "[".date("F j, Y, g:i a")."] - ";
+    $string .= $message;
+    $string .= "\r\n";
+    error_log($string, 3, $fileName);
+}
+
+function getSessionKey() {
+    $headers = getallheaders();
+    if (isset($headers["SESSION_KEY"])) {
+        return $headers["SESSION_KEY"];
+    }
+    return false;
+}
+
+function login($db, $userId, $password) {
+    $query = "SELECT user_id FROM user WHERE user_id = ? AND user_password = MD5(?)";
+    $result = executeSelect($db, $query, "ss", $userId, $password);
+    $success = false;
+    if ($result) {
+        while ($row = $result->fetch_assoc()) {
+            $success = true;
+        }
+    }
+    if ($success) {
+        $sessionKey = sha1($userId + time());
+        $query = "INSERT INTO session (user_id, session_key) VALUES (?, ?)";
+        $success = executeQuery($db, $query, "ss", $userId, $sessionKey);
+        if (!success) {
+            return false;
+        }
+        return $sessionKey;
+    }
+    return false;
 }
 
 ?>

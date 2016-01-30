@@ -145,10 +145,32 @@ app.controller('ViewLogsController', function ($rootScope, $scope, $http, $windo
         }).then(function(response) {
             $scope.data = response.data;
             $scope.logsListed = response.data["timelogs"];
-            $scope.logsListed.reverse();
         }, function(response) {
             $scope.error = response.data;
         });
+    }
+});
+
+app.controller('ViewUsersController', function ($rootScope, $scope, $http, $window, $location) {
+    'use strict';
+    
+    $scope.formData = {};
+    $scope.usersListed = [];
+    
+    $scope.submit = function () {
+        if ($scope.formData.team_number) {
+            $http({
+                url: "php/getUsers.php",
+                method: "POST",
+                headers: {"Content-Type": "application/x-www-form-urlencoded"},
+                data: $.param($scope.formData)
+            }).then(function(response) {
+                $scope.data = response.data;
+                $scope.usersListed = response.data["users"];
+            }, function(response) {
+                $scope.error = response.data;
+            });
+        }
     }
 });
 
@@ -173,6 +195,9 @@ app.config(['$routeProvider', function ($routeProvider, $locationProvider) {
     }).when('/view_timelogs', {
         templateUrl: 'html/viewLogs.html',
         controller: 'ViewLogsController'
+    }).when('/view_users', {
+        templateUrl: 'html/viewUsers.html',
+        controller: 'ViewUsersController'
     }).otherwise({
         redirectTo: '/'
     });

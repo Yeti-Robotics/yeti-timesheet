@@ -32,7 +32,7 @@ DROP TABLE IF EXISTS `session`;
 CREATE TABLE `session` (
   `session_id` int(11) NOT NULL,
   `user_id` varchar(20) NOT NULL,
-  `session_key` int(11) NOT NULL
+  `session_key` varchar(64) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------

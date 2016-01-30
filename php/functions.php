@@ -272,7 +272,7 @@ function login($db, $userId, $password) {
         $sessionKey = sha1($userId + time());
         $query = "INSERT INTO session (user_id, session_key) VALUES (?, ?)";
         $success = executeQuery($db, $query, "ss", $userId, $sessionKey);
-        if (!success) {
+        if (!$success) {
             return false;
         }
         return $sessionKey;

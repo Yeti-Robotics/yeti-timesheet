@@ -11,7 +11,7 @@ if (isset($_POST["user_id"]) && isset($_POST["user_password"])) {
     $result = login($db, $_POST["user_id"], $_POST["user_password"]);
     if ($result) {
         http_response_code(201);
-        $response["session"] = $result;
+        $response["session_key"] = $result;
     } else {
         http_response_code(500);
         $response["error"] = "Error logging in.";

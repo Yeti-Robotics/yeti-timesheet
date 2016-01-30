@@ -1,0 +1,30 @@
+<div class="container-fluid">
+    <h1>Timelogs</h1>
+    <form id="timelog_filter_form" ng-submit="submit()">
+        <div class="form-group">
+            <li>
+            <label for="user_name">Name:</label>
+            <input id="user_name" ng-model="formData.user_name" type="text" class="form-control"/>
+            </li>
+            <li>
+            <label for="user_id">User ID:</label>
+            <input id="user_id" ng-model="formData.user_id" type="text" class="form-control"/>
+            </li>
+            <li>
+            <label for="team_name">Team Name:</label>
+            <input id="team_name" ng-model="formData.team_name" type="text" class="form-control"/>
+            </li>
+            <li>
+            <label for="team_number">Team Number:</label>
+            <input id="team_number" ng-model="formData.team_number" type="number" class="form-control"/>
+            </li>
+            <button class="btn btn-primary btn-block" type="submit">Submit</button>
+        </div>
+        <ul>
+            <li ng-repeat="log in logsListed track by $index">
+            {{ log["timesheet_timestamp"] }}
+            {{ log["user_name"] }}
+            </li>
+        </ul>
+    </form>
+</div>

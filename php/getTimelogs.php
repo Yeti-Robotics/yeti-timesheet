@@ -8,15 +8,20 @@ header("Content-Type: application/json");
 $response = [];
 $filterNames = ["user_name", "user_id", "team_name", "team_number"];
 $filters = [];
+$hasFilters = false;
 for ($i = 0; $i < count($filterNames); $i++) {
     $filterName = $filterNames[$i];
     if (isset($_POST[$filterName]) && $_POST[$filterName] != "") {
         $filters[$filterName] = $_POST[$filterName];
+        $hasFilters = true;
     } else {
         $filters[$filterName] = null;
     }
 }
-$logs = getTimelogs($db, $filters);
+$logs = [];
+if ($hasFilters) {
+    $logs = getTimelogs($db, $filters);
+}
 if(is_array($logs)) {
     $response['timelogs'] = $logs;
 } else {

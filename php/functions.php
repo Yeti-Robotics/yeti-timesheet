@@ -100,7 +100,14 @@ function addTimelog($db, $userId) {
 
 function getTimelogs($db, $filters) {
     $filterNames = ["user_name", "user_id", "team_name", "team_number"];
-    $query = "SELECT * FROM timelog WHERE user_id IN (SELECT user_id FROM user WHERE team_number in (SELECT team_number FROM team";
+    $query = "SELECT timelog_id, timelog.user_id, timesheet_timestamp, user_name, team_number
+                FROM timelog
+                LEFT JOIN user
+                ON timelog.user_id = user.user_id
+                WHERE timelog.user_id IN
+                (SELECT user_id FROM user
+                WHERE team_number in
+                (SELECT team_number FROM team";
     $foundFilter = false;
     for ($i = 2; $i < 4; $i++) {
         $filterName = $filterNames[$i];
@@ -123,7 +130,7 @@ function getTimelogs($db, $filters) {
             $query .= sprintf(" AND LCASE(%s) = LCASE('%s')", $filterName, $filter);
         }
     }
-    $query .= ")";
+    $query .= ") ORDER BY timesheet_timestamp";
     
     $result = executeSelect($db, $query);
     if ($result) {

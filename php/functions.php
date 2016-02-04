@@ -280,4 +280,9 @@ function login($db, $userId, $password) {
     return false;
 }
 
+function logout($db, $sessionKey) {
+    $query = "DELETE FROM session WHERE session_key = ?";
+    return executeQuery($db, $query, "s", $sessionKey);
+}
+
 ?>

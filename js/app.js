@@ -29,6 +29,29 @@ app.service("loginService", function ($http, $q) {
     };
 });
 
+app.service("logoutService", function ($http, $q) {
+    'use strict';
+    
+    this.logout = function (sessionKey) {
+        var config, deferred;
+        config = {
+            method: "POST",
+            url: location.pathname + "php/logout.php",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "SESSION_KEY": sessionKey
+            }
+        };
+        deferred = $q.defer();
+        $http(config).success(function (data) {
+            deferred.resolve(data);
+        }).error(function (data) {
+            deferred.reject(data);
+        });
+        return deferred.promise;
+    };
+});
+
 app.service("timesheetService", function ($http, $q) {
     'use strict';
     
@@ -53,22 +76,82 @@ app.service("timesheetService", function ($http, $q) {
         });
         return deferred.promise;
     };
+    
+    this.teamLog = function (teamNumber, sessionKey) {
+        var config, deferred;
+        config = {
+            method: "POST",
+            url: location.pathname + "php/teamSignout.php",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "SESSION_KEY": sessionKey
+            },
+            data: $.param({
+                team_number: teamNumber
+            })
+        };
+        deferred = $q.defer();
+        $http(config).success(function (data) {
+            deferred.resolve(data);
+        }).error(function (data) {
+            deferred.reject(data);
+        });
+        return deferred.promise;
+    };
+    
+    this.getLogs = function (filters, sessionKey) {
+        var config, deferred;
+        config = {
+            method: "POST",
+            url: location.pathname + "php/getTimelogs.php",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "SESSION_KEY": sessionKey
+            },
+            data: $.param(filters)
+        };
+        deferred = $q.defer();
+        $http(config).success(function (data) {
+            deferred.resolve(data);
+        }).error(function (data) {
+            deferred.reject(data);
+        });
+        return deferred.promise;
+    };
 });
 
 app.controller("LoginController", function ($scope, $http, $window, loginService) {
     "use strict";
     console.log(loginService);
     
-    $scope.loggedIn = false;
+    $scope.wasLoggedIn = false;
     
     $scope.login = function () {
-        loginService.login($scope.user, $scope.user_password).then(function (data) {
-            console.log(data);
-            $window.sessionStorage.setItem("SESSION_KEY", data.session_key);
-            $scope.loggedIn = true;
-        }, function (data) {
-            console.log(data);
-        });
+        if (!$window.localStorage.getItem("SESSION_KEY")) {
+            loginService.login($scope.user, $scope.user_password).then(function (data) {
+                console.log(data);
+                $window.localStorage.setItem("SESSION_KEY", data.session_key);
+                $scope.wasLoggedIn = true;
+            }, function (data) {
+                console.log(data);
+            });
+        }
+    };
+});
+
+app.controller("LogoutController", function ($scope, $http, $window, $location, logoutService) {
+    "use strict";
+    
+    $scope.$on = function () {
+        if ($window.localStorage.getItem("SESSION_KEY")) {
+            logoutService.logout($window.localStorage.getItem("SESSION_KEY")).then(function (data) {
+                console.log(data);
+                $window.localStorage.removeItem("SESSION_KEY");
+            }, function (data) {
+                console.log(data);
+            });
+        }
+        $location.path("/");
     };
 });
 
@@ -78,9 +161,42 @@ app.controller("TimesheetController", function ($scope, $http, $window, timeshee
     $scope.lastLogged = "";
     
     $scope.submit = function () {
-        timesheetService.addLog($scope.user_id, $window.sessionStorage.getItem("SESSION_KEY")).then(function (data) {
+        timesheetService.addLog($scope.user_id, $window.localStorage.getItem("SESSION_KEY")).then(function (data) {
             console.log(data);
             $scope.lastLogged = $scope.user_id;
+        }, function (data) {
+            console.log(data);
+            $scope.lastLogged = "";
+        });
+    };
+});
+
+app.controller("TeamOutController", function ($scope, $http, $window, timesheetService) {
+    "use strict";
+    
+    $scope.lastLogged = "";
+    
+    $scope.submit = function () {
+        timesheetService.teamLog($scope.team_number, $window.localStorage.getItem("SESSION_KEY")).then(function (data) {
+            console.log(data);
+            $scope.lastLogged = $scope.team_number;
+        }, function (data) {
+            console.log(data);
+            $scope.lastLogged = "";
+        });
+    };
+});
+
+app.controller("ViewLogsController", function ($scope, $http, $window, timesheetService) {
+    "use strict";
+    
+    $scope.filters = {};
+    $scope.logsListed = [];
+    
+    $scope.submit = function () {
+        timesheetService.getLogs($scope.filters, $window.localStorage.getItem("SESSION_KEY")).then(function (data) {
+            console.log(data);
+            $scope.logsListed = data.timelogs;
         }, function (data) {
             console.log(data);
             $scope.lastLogged = "";
@@ -94,9 +210,18 @@ app.config(['$routeProvider', function ($routeProvider, $locationProvider) {
     $routeProvider.when('/', {
         templateUrl: 'html/login.html',
         controller: "LoginController"
+    }).when('/logout', {
+        templateUrl: 'html/login.html',
+        controller: "LogoutController"
     }).when('/timesheet', {
         templateUrl: 'html/timesheet.html',
         controller: "TimesheetController"
+    }).when('/team_timesheet', {
+        templateUrl: 'html/teamOut.html',
+        controller: "TeamOutController"
+    }).when('/view_timelogs', {
+        templateUrl: 'html/viewLogs.html',
+        controller: "ViewLogsController"
     }).otherwise({
         redirectTo: '/'
     });

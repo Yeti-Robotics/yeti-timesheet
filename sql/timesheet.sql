@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: 127.0.0.1
--- Generation Time: Jan 30, 2016 at 10:53 PM
+-- Generation Time: Feb 05, 2016 at 12:29 AM
 -- Server version: 10.1.8-MariaDB
 -- PHP Version: 5.6.14
 
@@ -32,7 +32,8 @@ DROP TABLE IF EXISTS `session`;
 CREATE TABLE `session` (
   `session_id` int(11) NOT NULL,
   `user_id` varchar(20) NOT NULL,
-  `session_key` varchar(64) NOT NULL
+  `session_key` varchar(64) NOT NULL,
+  `session_timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------

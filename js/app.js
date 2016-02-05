@@ -120,39 +120,41 @@ app.service("timesheetService", function ($http, $q) {
     };
 });
 
-app.controller("LoginController", function ($scope, $http, $window, loginService) {
+app.controller("LoginController", function ($scope, $http, $location, loginService) {
     "use strict";
-    console.log(loginService);
     
     $scope.wasLoggedIn = false;
     
     $scope.login = function () {
-        if (!$window.localStorage.getItem("SESSION_KEY")) {
+        if (!localStorage.getItem("SESSION_KEY")) {
             loginService.login($scope.user, $scope.user_password).then(function (data) {
                 console.log(data);
-                $window.localStorage.setItem("SESSION_KEY", data.session_key);
+                localStorage.setItem("SESSION_KEY", data.session_key);
                 $scope.wasLoggedIn = true;
+                $location.path("/home");
             }, function (data) {
                 console.log(data);
             });
         }
     };
+    
+    if (localStorage.SESSION_KEY !== undefined) {
+        $location.path("/home");
+    }
 });
 
-app.controller("LogoutController", function ($scope, $http, $window, $location, logoutService) {
+app.controller("LogoutController", function ($scope, $http, $location, logoutService) {
     "use strict";
     
-    $scope.$on = function () {
-        if ($window.localStorage.getItem("SESSION_KEY")) {
-            logoutService.logout($window.localStorage.getItem("SESSION_KEY")).then(function (data) {
-                console.log(data);
-                $window.localStorage.removeItem("SESSION_KEY");
-            }, function (data) {
-                console.log(data);
-            });
-        }
-        $location.path("/");
-    };
+    if (localStorage.getItem("SESSION_KEY")) {
+        logoutService.logout(localStorage.getItem("SESSION_KEY")).then(function (data) {
+            console.log(data);
+            localStorage.removeItem("SESSION_KEY");
+        }, function (data) {
+            console.log(data);
+        });
+    }
+    $location.path("/");
 });
 
 app.controller("TimesheetController", function ($scope, $http, $window, timesheetService) {
@@ -204,12 +206,19 @@ app.controller("ViewLogsController", function ($scope, $http, $window, timesheet
     };
 });
 
+app.controller("HomeController", function ($scope) {
+    "use strict";
+});
+
 app.config(['$routeProvider', function ($routeProvider, $locationProvider) {
     'use strict';
 
     $routeProvider.when('/', {
         templateUrl: 'html/login.html',
         controller: "LoginController"
+    }).when('/home', {
+        templateUrl: 'html/home.html',
+        controller: "HomeController"
     }).when('/logout', {
         templateUrl: 'html/login.html',
         controller: "LogoutController"

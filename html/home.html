@@ -1,1 +1,8 @@
-<h1>Home</h1>
+<div class="container-fluid">
+    <div ng-if="user_admin">
+        <div ng-include="'html/admin.html'"></div>
+    </div>
+    <div ng-if="!user_admin">
+        <div ng-include="'html/user.html'"></div>
+    </div>
+</div>

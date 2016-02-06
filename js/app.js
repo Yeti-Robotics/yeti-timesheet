@@ -3,6 +3,24 @@
 var app;
 app = angular.module('app', ['ngRoute']);
 
+app.run(function ($http, $rootScope, loginService) {
+    "use strict";
+    
+    if (localStorage.getItem("SESSION_KEY")) {
+        loginService.validateSession(localStorage.getItem("SESSION_KEY")).then(function (data) {
+            console.log(data);
+            if (!data.user_id) {
+                localStorage.removeItem("SESSION_KEY");
+            } else {
+                $rootScope.user_logged_in = true;
+                $rootScope.user_admin = data.user_admin;
+            }
+        }, function (data) {
+            console.log(data);
+        });
+    }
+});
+
 app.service("loginService", function ($http, $q) {
     'use strict';
     
@@ -18,6 +36,25 @@ app.service("loginService", function ($http, $q) {
                 user_id: userId,
                 user_password: password
             })
+        };
+        deferred = $q.defer();
+        $http(config).success(function (data) {
+            deferred.resolve(data);
+        }).error(function (data) {
+            deferred.reject(data);
+        });
+        return deferred.promise;
+    };
+    
+    this.validateSession = function (sessionKey) {
+        var config, deferred;
+        config = {
+            method: "GET",
+            url: location.pathname + "php/validateSession.php",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "SESSION_KEY": sessionKey
+            }
         };
         deferred = $q.defer();
         $http(config).success(function (data) {
@@ -120,7 +157,7 @@ app.service("timesheetService", function ($http, $q) {
     };
 });
 
-app.controller("LoginController", function ($scope, $http, $location, loginService) {
+app.controller("LoginController", function ($scope, $http, $location, $rootScope, loginService) {
     "use strict";
     
     $scope.wasLoggedIn = false;
@@ -130,6 +167,8 @@ app.controller("LoginController", function ($scope, $http, $location, loginServi
             loginService.login($scope.user, $scope.user_password).then(function (data) {
                 console.log(data);
                 localStorage.setItem("SESSION_KEY", data.session_key);
+                $rootScope.user_admin = Boolean(data.user_admin);
+                $rootScope.user_logged_in = true;
                 $scope.wasLoggedIn = true;
                 $location.path("/home");
             }, function (data) {
@@ -143,21 +182,41 @@ app.controller("LoginController", function ($scope, $http, $location, loginServi
     }
 });
 
-app.controller("LogoutController", function ($scope, $http, $location, logoutService) {
+app.controller("LogoutController", function ($scope, $http, $location, $route, logoutService) {
     "use strict";
     
     if (localStorage.getItem("SESSION_KEY")) {
         logoutService.logout(localStorage.getItem("SESSION_KEY")).then(function (data) {
             console.log(data);
+            localStorage.SESSION_KEY = undefined;
             localStorage.removeItem("SESSION_KEY");
+            $location.path("/");
         }, function (data) {
             console.log(data);
+            $location.path("/");
         });
+    } else {
+        $location.path("/");
     }
-    $location.path("/");
 });
 
 app.controller("TimesheetController", function ($scope, $http, $window, timesheetService) {
+    "use strict";
+    
+    $scope.lastLogged = "";
+    
+    $scope.submit = function () {
+        timesheetService.addLog($scope.user_id, $window.localStorage.getItem("SESSION_KEY")).then(function (data) {
+            console.log(data);
+            $scope.lastLogged = $scope.user_id;
+        }, function (data) {
+            console.log(data);
+            $scope.lastLogged = "";
+        });
+    };
+});
+
+app.controller("AdminController", function ($scope, $http, $window, timesheetService) {
     "use strict";
     
     $scope.lastLogged = "";
@@ -206,7 +265,7 @@ app.controller("ViewLogsController", function ($scope, $http, $window, timesheet
     };
 });
 
-app.controller("HomeController", function ($scope) {
+app.controller("HomeController", function ($scope, $rootScope) {
     "use strict";
 });
 

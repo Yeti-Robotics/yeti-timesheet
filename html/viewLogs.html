@@ -1,6 +1,6 @@
 <div class="container-fluid">
-    <h1>Timelogs</h1>
     <form id="timelog_filter_form" ng-submit="submit()">
+        <legend>Timelogs</legend>
         <div class="form-group">
             <label for="user_name">Name:</label>
             <input id="user_name" ng-model="filters.user_name" type="text" class="form-control"/>
@@ -10,13 +10,23 @@
             <input id="team_name" ng-model="filters.team_name" type="text" class="form-control"/>
             <label for="team_number">Team Number:</label>
             <input id="team_number" ng-model="filters.team_number" type="number" class="form-control"/>
-            <button class="btn btn-primary btn-block" type="submit">Submit</button>
         </div>
-        <ul>
-            <li ng-repeat="log in logsListed track by $index">
-            {{ log["timesheet_timestamp"] }}
-            {{ log["user_name"] }}
-            </li>
-        </ul>
+        <button class="btn btn-primary btn-block" type="submit">Submit</button>
+        <table class="table table-condensed" ng-if="logsListed[0]">
+            <thead>
+                <th>Name</th>
+                <th>Team Number</th>
+                <th>Time</th>
+                <th>In/Out</th>
+            </thead>
+            <tbody>
+                <tr ng-repeat="log in logsListed track by $index">
+                    <td>{{ log["user_name"] }}</td>
+                    <td>{{ log["team_number"] }}</td>
+                    <td>{{ log["timelog_timestamp"] }}</td>
+                    <td>{{ log["timelog_type"].toLowerCase() }}</td>
+                </tr>
+            </tbody>
+        </table>
     </form>
 </div>

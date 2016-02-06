@@ -6,7 +6,7 @@ include("functions.php");
 header("Content-Type: application/json");
 
 $response = [];
-$filterNames = ["user_name", "user_id", "team_name", "team_number"];
+$filterNames = ["user_name", "user_id", "team_name", "team_number", "time_limit"];
 $filters = [];
 $hasFilters = false;
 for ($i = 0; $i < count($filterNames); $i++) {

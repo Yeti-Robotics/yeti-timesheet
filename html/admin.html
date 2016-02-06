@@ -1,0 +1,15 @@
+<div ng-controller="AdminController">
+    <h3>Admin</h3>
+    <fieldset>
+        <legend>Timesheet</legend>
+        <div class="form-group">
+            <form ng-submit="submit()">
+                <div class="form-group">
+                    <label>User ID</label>
+                    <input class="form-control" type="text" placeholder="Enter your user ID." ng-model="user_id"/>
+                </div>
+                <button class="btn btn-block btn-primary" type="submit">Submit</button>
+            </form>
+        </div>
+    </fieldset>
+</div>

@@ -119,17 +119,29 @@ function addTimelog($db, $userId, $sessionKey) {
     if (!isAdmin($db, $sessionKey)) {
         return false;
     }
-    $query = "INSERT INTO timelog (user_id)
-                VALUES (?)";
-    return executeQuery($db, $query, "s", $userId);
+    $query = "SELECT timelog_type, (CASE timelog_type WHEN 'IN' THEN 'OUT' ELSE 'IN' END) AS type
+                FROM timelog
+                WHERE user_id=? AND timelog_timestamp < NOW()
+                ORDER BY timelog_timestamp DESC
+                LIMIT 0,1";
+    $result = executeSelect($db, $query, "s", $userId);
+    $timelogType = "IN";
+    if ($result) {
+        while ($row = $result->fetch_assoc()) {
+            $timelogType = $row["type"];
+        }
+    }
+    $query = "INSERT INTO timelog (user_id, timelog_type)
+                VALUES (?, ?)";
+    return executeQuery($db, $query, "ss", $userId, $timelogType);
 }
 
 function getTimelogs($db, $filters, $sessionKey) {
     if (!isAdmin($db, $sessionKey)) {
         return false;
     }
-    $filterNames = ["user_name", "user_id", "team_name", "team_number"];
-    $query = "SELECT timelog_id, timelog.user_id, timesheet_timestamp, user_name, team_number
+    $filterNames = ["user_name", "user_id", "team_name", "team_number", "time_limit"];
+    $query = "SELECT timelog_id, timelog.user_id, timelog_timestamp, timelog_type, user_name, team_number
                 FROM timelog
                 LEFT JOIN user
                 ON timelog.user_id = user.user_id
@@ -155,11 +167,19 @@ function getTimelogs($db, $filters, $sessionKey) {
     for ($i = 0; $i < 2; $i++) {
         $filterName = $filterNames[$i];
         $filter = $filters[$filterName];
-        if ($filter != null) {
+        if ($filter) {
             $query .= sprintf(" AND LCASE(%s) = LCASE('%s')", $filterName, $filter);
         }
     }
-    $query .= ") ORDER BY timesheet_timestamp";
+    $query .= ")";
+    for ($i = 4; $i < 4; $i++) {
+        $filterName = $filterNames[$i];
+        $filter = $filters[$filterName];
+        if ($filter != null) {
+            $query .= " AND timelog_timestamp > DATE_SUB(CURRENT_TIMESTAMP, INTERVAL 1 DAY)";
+        }
+    }
+    $query .= " ORDER BY timelog_timestamp DESC";
     
     $result = executeSelect($db, $query);
     if ($result) {
@@ -178,13 +198,13 @@ function getLastTimelogs($db, $limit, $sessionKey) {
         return false;
     }
     $query = "SELECT user.user_name,
-                MAX(timelog.timesheet_timestamp) AS 'timesheet_timestamp',
+                MAX(timelog.timelog_timestamp) AS 'timelog_timestamp',
                 COUNT(timelog.timelog_id) % 2 AS 'signed_in'
                 FROM timelog
                 LEFT JOIN user
                 ON user.user_id = timelog.user_id
                 GROUP BY user.user_id
-                ORDER BY MAX(timelog.timesheet_timestamp) DESC
+                ORDER BY MAX(timelog.timelog_timestamp) DESC
                 LIMIT ?";
     $result = executeSelect($db, $query, "i", $limit);
     if ($result) {
@@ -200,8 +220,8 @@ function getLastTimelogs($db, $limit, $sessionKey) {
 
 function teamSignout($db, $teamNumber) {
     // add a timelog for each team member with an odd number of timelogs
-    $query = "INSERT INTO timelog (user_id)
-                SELECT user.user_id
+    $query = "INSERT INTO timelog (user_id, timelog_type)
+                SELECT user.user_id, 'OUT' as timelog_type
                 FROM timelog
                 LEFT JOIN user
                 ON user.user_id = timelog.user_id
@@ -260,11 +280,13 @@ function getSessionKey() {
 }
 
 function login($db, $userId, $password) {
-    $query = "SELECT user_id FROM user WHERE user_id = ? AND user_password = MD5(?)";
+    $query = "SELECT user_admin FROM user WHERE user_id = ? AND user_password = MD5(?)";
     $result = executeSelect($db, $query, "ss", $userId, $password);
     $success = false;
+    $response = [];
     if ($result) {
         while ($row = $result->fetch_assoc()) {
+            $response = $row;
             $success = true;
         }
     }
@@ -275,7 +297,8 @@ function login($db, $userId, $password) {
         if (!$success) {
             return false;
         }
-        return $sessionKey;
+        $response["session_key"] = $sessionKey;
+        return $response;
     }
     return false;
 }

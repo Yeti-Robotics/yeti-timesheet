@@ -12,4 +12,24 @@
             </form>
         </div>
     </fieldset>
+    <div class="alert alert-success" id="timelog-success" ng-if="lastLogged">
+        <a class="close" data-dismiss="alert" aria-label="close">&times;</a>
+        <strong>User {{ lastLogged }} logged.</strong>
+    </div>
+    <table class="table table-condensed">
+        <thead>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Time</th>
+            <th>In/Out</th>
+        </thead>
+        <tbody>
+            <tr ng-repeat="log in logsListed track by $index">
+                <td>{{ log["user_id"] }}</td>
+                <td>{{ log["user_name"] }}</td>
+                <td>{{ log["timelog_timestamp"] }}</td>
+                <td>{{ log["timelog_type"].toLowerCase() }}</td>
+            </tr>
+        </tbody>
+    </table>
 </div>

@@ -14,15 +14,15 @@
         <button class="btn btn-primary btn-block" type="submit">Submit</button>
         <table class="table table-condensed" ng-if="logsListed[0]">
             <thead>
+                <th>User ID</th>
                 <th>Name</th>
-                <th>Team Number</th>
                 <th>Time</th>
                 <th>In/Out</th>
             </thead>
             <tbody>
                 <tr ng-repeat="log in logsListed track by $index">
+                    <td>{{ log["user_id"] }}</td>
                     <td>{{ log["user_name"] }}</td>
-                    <td>{{ log["team_number"] }}</td>
                     <td>{{ log["timelog_timestamp"] }}</td>
                     <td>{{ log["timelog_type"].toLowerCase() }}</td>
                 </tr>

@@ -1,0 +1,29 @@
+<div class="container-fluid">
+    <h1>Teams</h1>
+    <table class="table">
+        <thead>
+            <th>Team Name</th>
+            <th>Team Number</th>
+        </thead>
+        <tbody>
+            <tr ng-repeat="team in teamsListed track by $index">
+                <td>{{ team["team_name"] }}</td>
+                <td>{{ team["team_number"] }}</td>
+                <td><button class="btn" ng-if="user_admin" ng-click="members(team['team_number'])">Members</button></td>
+            </tr>
+        </tbody>
+    </table>
+    <h3 ng-if="usersListed[0]">Members of Team {{ teamNumber }}</h3>
+    <table class="table" ng-if="usersListed[0]">
+        <thead>
+            <th>Name</th>
+            <th>User ID</th>
+        </thead>
+        <tbody>
+            <tr ng-repeat="user in usersListed track by $index">
+                <td>{{ user["user_name"] }}</td>
+                <td>{{ user["user_id"] }}</td>
+            </tr>
+        </tbody>
+    </table>
+</div>

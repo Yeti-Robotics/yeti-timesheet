@@ -67,7 +67,7 @@ function addTeam($db, $teamNumber, $teamName, $sessionKey) {
 }
 
 function getTeams($db, $sessionKey) {
-    if (!isAdmin($db, $sessionKey)) {
+    if (!getUserID($db, $sessionKey)) {
         return false;
     }
     $query = "SELECT * FROM team";
@@ -140,7 +140,7 @@ function getTimelogs($db, $filters, $sessionKey) {
     if (!isAdmin($db, $sessionKey)) {
         return false;
     }
-    $filterNames = ["user_name", "user_id", "team_name", "team_number", "time_limit"];
+    $filterNames = ["user_name", "user_id", "team_name", "team_number"];
     $query = "SELECT timelog_id, timelog.user_id, timelog_timestamp, timelog_type, user_name, team_number
                 FROM timelog
                 LEFT JOIN user
@@ -172,14 +172,14 @@ function getTimelogs($db, $filters, $sessionKey) {
         }
     }
     $query .= ")";
-    for ($i = 4; $i < 4; $i++) {
-        $filterName = $filterNames[$i];
-        $filter = $filters[$filterName];
-        if ($filter != null) {
-            $query .= " AND timelog_timestamp > DATE_SUB(CURRENT_TIMESTAMP, INTERVAL 1 DAY)";
-        }
+    if ($filters["time_limit"] != null) {
+        $query .= " AND timelog_timestamp > DATE_SUB(CURRENT_TIMESTAMP, INTERVAL 1 DAY)";
     }
     $query .= " ORDER BY timelog_timestamp DESC";
+    $filter = $filters["num_limit"];
+    if ($filter != null && is_numeric($filter)) {
+        $query .= " LIMIT $filter";
+    }
     
     $result = executeSelect($db, $query);
     if ($result) {

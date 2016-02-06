@@ -141,7 +141,7 @@ function getTimelogs($db, $filters, $sessionKey) {
         return false;
     }
     $filterNames = ["user_name", "user_id", "team_name", "team_number"];
-    $query = "SELECT timelog_id, timelog.user_id, timelog_timestamp, timelog_type, user_name, team_number
+    $query = "SELECT timelog_id, timelog.user_id, UNIX_TIMESTAMP(timelog_timestamp) AS timelog_timestamp, timelog_type, user_name, team_number
                 FROM timelog
                 LEFT JOIN user
                 ON timelog.user_id = user.user_id
@@ -213,6 +213,30 @@ function getLastTimelogs($db, $limit, $sessionKey) {
             $logs[] = $row;
         }
         return $logs;
+    } else {
+        return false;
+    }
+}
+
+function getLoggedInUsers($db, $sessionKey) {
+    if (!isAdmin($db, $sessionKey)) {
+        return false;
+    }
+    $query = "SELECT user.user_id, user_name FROM timelog
+                JOIN user ON user.user_id = timelog.user_id
+                WHERE timelog_type = 'IN'
+                AND (timelog_timestamp, timelog.user_id) IN
+                (SELECT MAX(timelog_timestamp), user_id
+                FROM timelog
+                WHERE timelog_timestamp
+                GROUP BY timelog.user_id)";
+    $result = executeSelect($db, $query);
+    if ($result) {
+        $users = [];
+        while ($row = $result->fetch_assoc()) {
+            $users[] = $row;
+        }
+        return $users;
     } else {
         return false;
     }

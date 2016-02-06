@@ -1,5 +1,10 @@
 /*global angular, $, console*/
 
+function displayMessage(message, alertType) {
+    "use strict";
+    $('.message-container').html(message).removeClass('alert-success alert-info alert-warning alert-danger').addClass('alert-' + alertType).slideDown(500).delay(3000).slideUp(500);
+}
+
 var app;
 app = angular.module('app', ['ngRoute']);
 
@@ -206,7 +211,6 @@ app.service("teamService", function ($http, $q) {
     };
 });
 
-
 app.service("userService", function ($http, $q) {
     'use strict';
     
@@ -231,12 +235,29 @@ app.service("userService", function ($http, $q) {
         });
         return deferred.promise;
     };
+    
+    this.getLoggedInUsers = function (sessionKey) {
+        var config, deferred;
+        config = {
+            method: "GET",
+            url: location.pathname + "php/getLoggedInUsers.php",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "SESSION_KEY": sessionKey
+            }
+        };
+        deferred = $q.defer();
+        $http(config).success(function (data) {
+            deferred.resolve(data);
+        }).error(function (data) {
+            deferred.reject(data);
+        });
+        return deferred.promise;
+    };
 });
 
 app.controller("LoginController", function ($scope, $http, $location, $rootScope, loginService) {
     "use strict";
-    
-    $scope.wasLoggedIn = false;
     
     $scope.login = function () {
         if (!localStorage.getItem("SESSION_KEY")) {
@@ -245,10 +266,11 @@ app.controller("LoginController", function ($scope, $http, $location, $rootScope
                 localStorage.setItem("SESSION_KEY", data.session_key);
                 $rootScope.user_admin = Boolean(data.user_admin);
                 $rootScope.user_logged_in = true;
-                $scope.wasLoggedIn = true;
                 $location.path("/home");
+                displayMessage('Login successful.', 'success');
             }, function (data) {
                 console.log(data);
+                displayMessage('Login failed.', 'danger');
             });
         }
     };
@@ -297,7 +319,6 @@ app.controller("TimesheetController", function ($scope, $http, timesheetService)
 app.controller("AdminController", function ($scope, $http, timesheetService) {
     "use strict";
     
-    $scope.lastLogged = "";
     $scope.logsListed = [];
     
     timesheetService.getLogs({"time_limit": "day"}, localStorage.getItem("SESSION_KEY")).then(function (data) {
@@ -309,19 +330,22 @@ app.controller("AdminController", function ($scope, $http, timesheetService) {
     
     $scope.submit = function () {
         timesheetService.addLog($scope.user_id, localStorage.getItem("SESSION_KEY")).then(function (data) {
-            console.log(data);
-            $scope.lastLogged = $scope.user_id;
+            displayMessage('Timelog successful.', 'success');
+            $scope.user_id = "";
             timesheetService.getLogs({"time_limit": "day"}, localStorage.getItem("SESSION_KEY")).then(function (data) {
-                console.log(data);
                 $scope.logsListed = data.timelogs;
             }, function (data) {
                 console.log(data);
             });
         }, function (data) {
-            console.log(data);
-            $scope.lastLogged = "";
+            displayMessage('Timelog failed.', 'danger');
+            $scope.user_id = "";
         });
-        
+    };
+    
+    $scope.getTime = function (unixTime) {
+        unixTime *= 1000;
+        return new Date(unixTime).toLocaleTimeString();
     };
 });
 

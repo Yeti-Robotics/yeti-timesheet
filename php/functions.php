@@ -121,8 +121,8 @@ function addTimelog($db, $userId, $sessionKey) {
     }
     $query = "SELECT timelog_type, (CASE timelog_type WHEN 'IN' THEN 'OUT' ELSE 'IN' END) AS type
                 FROM timelog
-                WHERE user_id=? AND timelog_timestamp < NOW()
-                ORDER BY timelog_timestamp DESC
+                WHERE user_id=?
+                ORDER BY timelog_timestamp DESC, timelog_id DESC
                 LIMIT 0,1";
     $result = executeSelect($db, $query, "s", $userId);
     $timelogType = "IN";
@@ -175,7 +175,7 @@ function getTimelogs($db, $filters, $sessionKey) {
     if ($filters["time_limit"] != null) {
         $query .= " AND timelog_timestamp > DATE_SUB(CURRENT_TIMESTAMP, INTERVAL 1 DAY)";
     }
-    $query .= " ORDER BY timelog_timestamp DESC";
+    $query .= " ORDER BY timelog_timestamp DESC, timelog_id DESC";
     $filter = $filters["num_limit"];
     if ($filter != null && is_numeric($filter)) {
         $query .= " LIMIT $filter";

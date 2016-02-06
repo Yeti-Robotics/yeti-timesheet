@@ -3,7 +3,7 @@
 var app;
 app = angular.module('app', ['ngRoute']);
 
-app.run(function ($http, $rootScope, loginService) {
+app.run(function ($http, $rootScope, $location, loginService) {
     "use strict";
     
     if (localStorage.getItem("SESSION_KEY")) {
@@ -11,12 +11,15 @@ app.run(function ($http, $rootScope, loginService) {
             console.log(data);
             if (!data.user_id) {
                 localStorage.removeItem("SESSION_KEY");
+                $location.path("/");
             } else {
                 $rootScope.user_logged_in = true;
                 $rootScope.user_admin = data.user_admin;
             }
         }, function (data) {
             console.log(data);
+            localStorage.removeItem("SESSION_KEY");
+            $location.path("/");
         });
     }
 });
@@ -297,8 +300,7 @@ app.controller("AdminController", function ($scope, $http, timesheetService) {
     $scope.lastLogged = "";
     $scope.logsListed = [];
     
-    timesheetService.getLogs({"time_limit": "day"},
-                             localStorage.getItem("SESSION_KEY")).then(function (data) {
+    timesheetService.getLogs({"time_limit": "day"}, localStorage.getItem("SESSION_KEY")).then(function (data) {
         console.log(data);
         $scope.logsListed = data.timelogs;
     }, function (data) {
@@ -309,8 +311,7 @@ app.controller("AdminController", function ($scope, $http, timesheetService) {
         timesheetService.addLog($scope.user_id, localStorage.getItem("SESSION_KEY")).then(function (data) {
             console.log(data);
             $scope.lastLogged = $scope.user_id;
-            timesheetService.getLogs({"time_limit": "day"},
-                                     localStorage.getItem("SESSION_KEY")).then(function (data) {
+            timesheetService.getLogs({"time_limit": "day"}, localStorage.getItem("SESSION_KEY")).then(function (data) {
                 console.log(data);
                 $scope.logsListed = data.timelogs;
             }, function (data) {

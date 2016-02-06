@@ -12,7 +12,7 @@ if($userId) {
     $response['user_admin'] = isAdmin($db, getSessionKey());
 } else {
     http_response_code(500);
-    $response["error"] = "Error retreiving teams.";
+    $response["error"] = "Error validating session.";
 }
 
 echo json_encode($response);

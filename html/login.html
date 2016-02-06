@@ -2,14 +2,24 @@
     <fieldset>
         <legend>Login</legend>
         <form id="login_form" ng-submit="login()">
-            <div class="form-group">
-                <label for="user">User:</label>
-                <input class="form-control" id="user" ng-model="user" type="text" required>
-                <label for="user_password">Password:</label>
-                <input class="form-control" id="user_password" ng-model="user_password" type="password" required>
+            <div class="row form-group">
+                <div class="col-xs-12 col-sm-2">
+                    <label for="user">User:</label>
+                </div>
+                <div class="col-xs-12 col-sm-10">
+                    <input class="form-control" id="user" ng-model="user" type="text" required>
+                </div>
+            </div>
+            <div class="row form-group">
+                <div class="col-xs-12 col-sm-2">
+                    <label for="user_password">Password:</label>
+                </div>
+                <div class="col-xs-12 col-sm-10">
+                    <input class="form-control" id="user_password" ng-model="user_password" type="password" required>
+                </div>
             </div>
             <div class="form-group">
-                <button class="btn btn-block btn-primary" type="submit">Submit</button>
+                <button class="btn btn-block btn-primary btn-lg" type="submit">Submit</button>
             </div>
         </form>
     </fieldset>

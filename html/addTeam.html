@@ -2,16 +2,10 @@
     <h1>Add Team</h1>
     <form id="add_team_form" ng-submit="submit()">
         <div class="form-group">
-            <ul>
-                <li>
-                <label for="team_name">Team Name:</label>
-                <input id="team_name" ng-model="team_name" type="text">
-                </li>
-                <li>
-                <label for="team_number">Team Number:</label>
-                <input id="team_number" ng-model="team_number" type="number">
-                </li>
-            </ul>
+            <label for="team_name">Team Name:</label>
+            <input class="form-control" id="team_name" ng-model="team_name" type="text">
+            <label for="team_number">Team Number:</label>
+            <input class="form-control" id="team_number" ng-model="team_number" type="number">
         </div>
         <div class="form-group">
             <button class="btn btn-primary btn-block" type="submit">Submit</button>

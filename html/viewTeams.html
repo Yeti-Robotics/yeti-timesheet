@@ -11,6 +11,11 @@
                 <td>{{ team["team_number"] }}</td>
                 <td><button class="btn" ng-if="user_admin" ng-click="members(team['team_number'])">Members</button></td>
             </tr>
+            <tr>
+                <td><a href="#/add_team" ng-if="user_admin">Add Team</a></td>
+                <td></td>
+                <td></td>
+            </tr>
         </tbody>
     </table>
     <h3 ng-if="usersListed[0]">Members of Team {{ teamNumber }}</h3>
@@ -23,6 +28,11 @@
             <tr ng-repeat="user in usersListed track by $index">
                 <td>{{ user["user_name"] }}</td>
                 <td>{{ user["user_id"] }}</td>
+            </tr>
+            <tr>
+                <td><a href="#/add_user">Add Member</a></td>
+                <td></td>
+                <td></td>
             </tr>
         </tbody>
     </table>

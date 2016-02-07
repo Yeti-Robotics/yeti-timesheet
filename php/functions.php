@@ -91,7 +91,7 @@ function addUser($db, $userNumber, $userName, $teamNumber, $userEmail, $userPass
     $query = "INSERT INTO user (user_id, user_name, team_number, user_email, user_password, user_admin, user_mentor)
                 VALUES (?, ?, ?, ?, ?, ?, ?)";
     return executeQuery($db, $query, "ssissii",
-                        $teamNumber . "-" . $userNumber, $userName, $teamNumber, $userEmail, $userPassword, $userAdmin, $userMentor);
+                        $teamNumber . "-" . $userNumber, $userName, $teamNumber, $userEmail, md5($userPassword), $userAdmin, $userMentor);
 }
 
 function getUsers($db, $teamNumber, $sessionKey) {
@@ -106,11 +106,11 @@ function getUsers($db, $teamNumber, $sessionKey) {
         $result = executeSelect($db, $query);
     }
     if ($result) {
-        $teams = [];
+        $users = [];
         while ($row = $result->fetch_assoc()) {
-            $teams[] = $row;
+            $users[] = $row;
         }
-        return $teams;
+        return $users;
     } else {
         return false;
     }

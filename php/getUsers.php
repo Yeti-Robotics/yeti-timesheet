@@ -7,8 +7,8 @@ header("Content-Type: application/json");
 
 $response = [];
 $teamNumber = null;
-if (isset($_POST['team_number'])) {
-    $teamNumber = $_POST['team_number'];
+if (isset($_GET['team_number'])) {
+    $teamNumber = $_GET['team_number'];
 }
 $users = getUsers($db, $teamNumber, getSessionKey());
 if(is_array($users)) {

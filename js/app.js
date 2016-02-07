@@ -147,13 +147,13 @@ app.service("timesheetService", function ($http, $q) {
     this.getLogs = function (filters, sessionKey) {
         var config, deferred;
         config = {
-            method: "POST",
+            method: "GET",
             url: location.pathname + "php/getTimelogs.php",
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded",
                 "SESSION_KEY": sessionKey
             },
-            data: $.param(filters)
+            params: filters
         };
         deferred = $q.defer();
         $http(config).success(function (data) {
@@ -233,18 +233,38 @@ app.service("teamService", function ($http, $q) {
 app.service("userService", function ($http, $q) {
     'use strict';
     
-    this.getUsers = function (teamNumber, sessionKey) {
+    this.addUser = function (userData, sessionKey) {
         var config, deferred;
         config = {
             method: "POST",
+            url: location.pathname + "php/addUser.php",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "SESSION_KEY": sessionKey
+            },
+            data: $.param(userData)
+        };
+        deferred = $q.defer();
+        $http(config).success(function (data) {
+            deferred.resolve(data);
+        }).error(function (data) {
+            deferred.reject(data);
+        });
+        return deferred.promise;
+    };
+    
+    this.getUsers = function (teamNumber, sessionKey) {
+        var config, deferred;
+        config = {
+            method: "GET",
             url: location.pathname + "php/getUsers.php",
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded",
                 "SESSION_KEY": sessionKey
             },
-            data: $.param({
+            params: {
                 team_number: teamNumber
-            })
+            }
         };
         deferred = $q.defer();
         $http(config).success(function (data) {
@@ -264,9 +284,9 @@ app.service("userService", function ($http, $q) {
                 "Content-Type": "application/x-www-form-urlencoded",
                 "SESSION_KEY": sessionKey
             },
-            data: $.param({
+            params: {
                 user_id: userId
-            })
+            }
         };
         deferred = $q.defer();
         $http(config).success(function (data) {
@@ -285,6 +305,28 @@ app.service("userService", function ($http, $q) {
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded",
                 "SESSION_KEY": sessionKey
+            }
+        };
+        deferred = $q.defer();
+        $http(config).success(function (data) {
+            deferred.resolve(data);
+        }).error(function (data) {
+            deferred.reject(data);
+        });
+        return deferred.promise;
+    };
+    
+    this.idTaken = function (userId, sessionKey) {
+        var config, deferred;
+        config = {
+            method: "GET",
+            url: location.pathname + "php/idTaken.php",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "SESSION_KEY": sessionKey
+            },
+            params: {
+                user_id: userId
             }
         };
         deferred = $q.defer();
@@ -461,7 +503,7 @@ app.controller("AddTeamController", function ($scope, $rootScope, $location, tea
     
     $scope.submit = function () {
         teamService.addTeam($scope.team_name, $scope.team_number, localStorage.getItem("SESSION_KEY")).then(function (data) {
-            console.log(data);
+            displayMessage("Team added successfully.", "success");
             $location.path("/");
         }, function (data) {
             console.log(data);
@@ -474,38 +516,90 @@ app.controller("ViewTeamsController", function ($scope, $rootScope, $location, u
     
     $scope.teamsListed = [];
     $scope.usersListed = [];
+    $scope.usersByTeam = {};
 
     teamService.getTeams(localStorage.getItem("SESSION_KEY")).then(function (data) {
-        console.log(data);
         $scope.teamsListed = data.teams;
     }, function (data) {
         console.log(data);
     });
     
     $scope.members = function (teamNumber) {
-        userService.getUsers(teamNumber, localStorage.getItem("SESSION_KEY")).then(function (data) {
-            console.log(data);
-            $scope.usersListed = data.users;
-            $scope.teamNumber = teamNumber;
-        }, function (data) {
-            console.log(data);
-        });
+        if ($scope.usersByTeam[teamNumber]) {
+            $scope.usersListed = $scope.usersByTeam[teamNumber];
+        } else {
+            userService.getUsers(teamNumber, localStorage.getItem("SESSION_KEY")).then(function (data) {
+                $scope.usersListed = data.users;
+                $scope.usersByTeam[teamNumber] = $scope.usersListed;
+                $scope.teamNumber = teamNumber;
+            }, function (data) {
+                console.log(data);
+            });
+        }
     };
 });
 
-app.controller("ProfileController", function ($scope, $rootScope, userService) {
+app.controller("ProfileController", function ($scope, $rootScope, $location, userService) {
     "use strict";
     
     $scope.loadUser = function () {
         userService.getCurrentUser(localStorage.SESSION_KEY).then(function (data) {
-            console.log(data);
             $scope.userData = data.user;
         }, function (data) {
             console.log(data);
         });
     };
     
-    $scope.loadUser();
+    $scope.loadUserById = function (userId) {
+        userService.getUser(userId, localStorage.SESSION_KEY).then(function (data) {
+            $scope.userData = data.user;
+        }, function (data) {
+            console.log(data);
+        });
+    };
+    
+    var userId = $location.search().id;
+    if (userId) {
+        console.log($location.search());
+        $scope.loadUserById(userId);
+    } else {
+        $scope.loadUser();
+    }
+});
+
+app.controller("AddUserController", function ($scope, $rootScope, $location, userService) {
+    "use strict";
+    
+    $scope.formData = {};
+    $scope.passMatch = true;
+    $scope.idsTaken = [];
+    
+    $scope.submit = function () {
+        userService.addUser($scope.formData, localStorage.getItem("SESSION_KEY")).then(function (data) {
+            console.log(data);
+            displayMessage("User added successfully.", "success");
+            $location.path("/");
+        }, function (data) {
+            console.log(data);
+        });
+    };
+    
+    $scope.doPassesMatch = function () {
+        $scope.passMatch = ($scope.formData.user_password === $scope.formData.user_password_confirm);
+    };
+    
+    $scope.isNumTaken = function () {
+        $scope.idTaken = $scope.idsTaken.includes($scope.formData.team_number + "-" + $scope.formData.user_number);
+    };
+    
+    userService.getUsers(null, localStorage.SESSION_KEY).then(function (data) {
+        var i;
+        for (i = 0; i < data.users.length; i += 1) {
+            $scope.idsTaken.push(data.users[i].user_id);
+        }
+    }, function (data) {
+        console.log(data);
+    });
 });
 
 app.config(['$routeProvider', function ($routeProvider, $locationProvider) {
@@ -531,6 +625,8 @@ app.config(['$routeProvider', function ($routeProvider, $locationProvider) {
     }).when('/add_team', {
         templateUrl: 'html/addTeam.html',
         controller: "AddTeamController"
+    }).when('/add_user', {
+        templateUrl: 'html/addUser.html'
     }).when('/profile', {
         templateUrl: 'html/profile.html'
     }).otherwise({

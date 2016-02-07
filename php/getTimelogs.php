@@ -11,8 +11,8 @@ $filters = [];
 $hasFilters = false;
 for ($i = 0; $i < count($filterNames); $i++) {
     $filterName = $filterNames[$i];
-    if (isset($_POST[$filterName]) && $_POST[$filterName] != "") {
-        $filters[$filterName] = $_POST[$filterName];
+    if (isset($_GET[$filterName]) && $_GET[$filterName] != "") {
+        $filters[$filterName] = $_GET[$filterName];
         $hasFilters = true;
     } else {
         $filters[$filterName] = null;

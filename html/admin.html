@@ -1,31 +1,45 @@
-<div ng-controller="AdminController">
-    <h3>Admin</h3>
-    <fieldset>
-        <legend>Timesheet</legend>
-        <div class="form-group">
-            <form ng-submit="submit()">
-                <div class="form-group">
-                    <label>User ID</label>
-                    <input class="form-control" type="text" placeholder="Enter your user ID." ng-model="user_id" required/>
-                </div>
-                <button class="btn btn-block btn-primary" type="submit">Submit</button>
-            </form>
+<div class="container-fluid">
+    <div ng-controller="AdminController">
+        <fieldset>
+            <legend>Timesheet</legend>
+            <div class="form-group">
+                <form ng-submit="submit()">
+                    <div class="form-group">
+                        <label>User ID</label>
+                        <input class="form-control" type="text" placeholder="Enter your user ID." ng-model="user_id" required/>
+                    </div>
+                    <button class="btn btn-block btn-primary" type="submit">Submit</button>
+                </form>
+            </div>
+        </fieldset>
+        
+        <div class="user-label-container">
+            <div class="section-title">Currently Logged In</div>
+            <div class = "team-container" ng-repeat="team in loggedInUsers track by $index">
+                <div class = "team">{{ team[0].team_number }} - {{ team[0].team_name }}</div>
+                <span class="label" ng-class-even="'label-primary'" ng-class-odd="'label-info'" ng-repeat="user in team track by $index">
+                    {{ user.user_name }}
+                    <span class="glyphicon glyphicon-remove close-icon" ng-click="logoutUser(user.user_id)"></span>
+                </span>
+            </div>
         </div>
-    </fieldset>
-    <table class="table table-condensed">
-        <thead>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Time</th>
-            <th>In/Out</th>
-        </thead>
-        <tbody>
-            <tr ng-repeat="log in logsListed track by $index">
-                <td>{{ log["user_id"] }}</td>
-                <td>{{ log["user_name"] }}</td>
-                <td>{{ getTime(log["timelog_timestamp"]) }}</td>
-                <td>{{ log["timelog_type"].toLowerCase() }}</td>
-            </tr>
-        </tbody>
-    </table>
+        
+        <div class="section-title">Timelogs Today</div>
+        <table class="table table-condensed table-striped">
+            <thead>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Time</th>
+                <th>In/Out</th>
+            </thead>
+            <tbody>
+                <tr ng-repeat="log in logsListed track by $index">
+                    <td>{{ log["user_id"] }}</td>
+                    <td>{{ log["user_name"] }}</td>
+                    <td>{{ getTime(log["timelog_timestamp"]) }}</td>
+                    <td>{{ log["timelog_type"].toLowerCase() }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 </div>

@@ -2,7 +2,7 @@
 
 function displayMessage(message, alertType) {
     "use strict";
-    $('.message-container').html(message).removeClass('alert-success alert-info alert-warning alert-danger').addClass('alert-' + alertType).slideDown(500).delay(3000).slideUp(500);
+    $('.message-container').html(message).removeClass('alert-success alert-info alert-warning alert-danger').addClass('alert-' + alertType).stop(true).slideDown(500).delay(3000).slideUp(500);
 }
 
 var app;
@@ -163,6 +163,25 @@ app.service("timesheetService", function ($http, $q) {
         });
         return deferred.promise;
     };
+    
+    this.getLoggedInUsers = function (sessionKey) {
+        var config, deferred;
+        config = {
+            method: "GET",
+            url: location.pathname + "php/getLoggedInUsers.php",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "SESSION_KEY": sessionKey
+            }
+        };
+        deferred = $q.defer();
+        $http(config).success(function (data) {
+            deferred.resolve(data);
+        }).error(function (data) {
+            deferred.reject(data);
+        });
+        return deferred.promise;
+    };
 });
 
 app.service("teamService", function ($http, $q) {
@@ -236,11 +255,33 @@ app.service("userService", function ($http, $q) {
         return deferred.promise;
     };
     
-    this.getLoggedInUsers = function (sessionKey) {
+    this.getUser = function (userId, sessionKey) {
         var config, deferred;
         config = {
             method: "GET",
-            url: location.pathname + "php/getLoggedInUsers.php",
+            url: location.pathname + "php/getUser.php",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "SESSION_KEY": sessionKey
+            },
+            data: $.param({
+                user_id: userId
+            })
+        };
+        deferred = $q.defer();
+        $http(config).success(function (data) {
+            deferred.resolve(data);
+        }).error(function (data) {
+            deferred.reject(data);
+        });
+        return deferred.promise;
+    };
+    
+    this.getCurrentUser = function (sessionKey) {
+        var config, deferred;
+        config = {
+            method: "GET",
+            url: location.pathname + "php/getCurrentUser.php",
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded",
                 "SESSION_KEY": sessionKey
@@ -319,24 +360,43 @@ app.controller("TimesheetController", function ($scope, $http, timesheetService)
 app.controller("AdminController", function ($scope, $http, timesheetService) {
     "use strict";
     
-    $scope.logsListed = [];
+    $scope.getLogs = function () {
+        timesheetService.getLogs({"time_limit": "day"}, localStorage.getItem("SESSION_KEY")).then(function (data) {
+            $scope.logsListed = data.timelogs;
+        }, function (data) {
+            console.log(data);
+        });
+    };
     
-    timesheetService.getLogs({"time_limit": "day"}, localStorage.getItem("SESSION_KEY")).then(function (data) {
-        console.log(data);
-        $scope.logsListed = data.timelogs;
-    }, function (data) {
-        console.log(data);
-    });
+    $scope.getLoggedInUsers = function () {
+        var loggedInUsers, i, team, user, index;
+        timesheetService.getLoggedInUsers(localStorage.getItem("SESSION_KEY")).then(function (data) {
+            console.log(data);
+            
+            index = -1;
+            loggedInUsers = [];
+            for (i = 0; i < data.users.length; i += 1) {
+                user = data.users[i];
+                if (team !== user.team_number) {
+                    index += 1;
+                    loggedInUsers.push([user]);
+                } else {
+                    loggedInUsers[index].push(user);
+                }
+                team = user.team_number;
+            }
+            $scope.loggedInUsers = loggedInUsers;
+        }, function (data) {
+            console.log(data);
+        });
+    };
     
     $scope.submit = function () {
         timesheetService.addLog($scope.user_id, localStorage.getItem("SESSION_KEY")).then(function (data) {
             displayMessage('Timelog successful.', 'success');
             $scope.user_id = "";
-            timesheetService.getLogs({"time_limit": "day"}, localStorage.getItem("SESSION_KEY")).then(function (data) {
-                $scope.logsListed = data.timelogs;
-            }, function (data) {
-                console.log(data);
-            });
+            $scope.getLogs();
+            $scope.getLoggedInUsers();
         }, function (data) {
             displayMessage('Timelog failed.', 'danger');
             $scope.user_id = "";
@@ -347,6 +407,14 @@ app.controller("AdminController", function ($scope, $http, timesheetService) {
         unixTime *= 1000;
         return new Date(unixTime).toLocaleTimeString();
     };
+    
+    $scope.logoutUser = function (userId) {
+        $scope.user_id = userId;
+        $scope.submit();
+    };
+    
+    $scope.getLogs();
+    $scope.getLoggedInUsers();
 });
 
 app.controller("TeamOutController", function ($scope, $http, $location, timesheetService) {
@@ -380,6 +448,11 @@ app.controller("ViewLogsController", function ($scope, $http, timesheetService) 
             console.log(data);
             $scope.lastLogged = "";
         });
+    };
+    
+    $scope.getTime = function (unixTime) {
+        unixTime *= 1000;
+        return new Date(unixTime).toLocaleTimeString();
     };
 });
 
@@ -420,8 +493,19 @@ app.controller("ViewTeamsController", function ($scope, $rootScope, $location, u
     };
 });
 
-app.controller("HomeController", function ($scope, $rootScope) {
+app.controller("ProfileController", function ($scope, $rootScope, userService) {
     "use strict";
+    
+    $scope.loadUser = function () {
+        userService.getCurrentUser(localStorage.SESSION_KEY).then(function (data) {
+            console.log(data);
+            $scope.userData = data.user;
+        }, function (data) {
+            console.log(data);
+        });
+    };
+    
+    $scope.loadUser();
 });
 
 app.config(['$routeProvider', function ($routeProvider, $locationProvider) {
@@ -431,14 +515,10 @@ app.config(['$routeProvider', function ($routeProvider, $locationProvider) {
         templateUrl: 'html/login.html',
         controller: "LoginController"
     }).when('/home', {
-        templateUrl: 'html/home.html',
-        controller: "HomeController"
+        templateUrl: 'html/home.html'
     }).when('/logout', {
-        templateUrl: 'html/home.html',
+        templateUrl: 'html/login.html',
         controller: "LogoutController"
-    }).when('/timesheet', {
-        templateUrl: 'html/timesheet.html',
-        controller: "TimesheetController"
     }).when('/team_timesheet', {
         templateUrl: 'html/teamOut.html',
         controller: "TeamOutController"
@@ -451,6 +531,8 @@ app.config(['$routeProvider', function ($routeProvider, $locationProvider) {
     }).when('/add_team', {
         templateUrl: 'html/addTeam.html',
         controller: "AddTeamController"
+    }).when('/profile', {
+        templateUrl: 'html/profile.html'
     }).otherwise({
         redirectTo: '/'
     });

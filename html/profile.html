@@ -1,0 +1,11 @@
+<div class="container-fluid">
+    <div ng-controller="ProfileController">
+        <h2>{{ userData.user_name }}</h2>
+        <h4>
+            <span ng-if="user_mentor">Mentor,</span>
+            <span ng-if="!user_mentor">Student,</span>
+            Team {{ userData.team_number }} {{ userData.team_name }}
+        </h4>
+        <label>E-Mail Address:</label> {{ userData.user_email }}
+    </div>
+</div>

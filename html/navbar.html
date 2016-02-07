@@ -10,7 +10,8 @@
            <a class="navbar-brand" href="#/">Yeti Timekeeping</a>
         </div>
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-            <ul class="nav navbar-nav">
+            <ul class="nav navbar-nav navbar-right">
+                <li><a href="#/profile" ng-if="user_admin">Profile</a></li>
                 <li><a href="#/team_timesheet" ng-if="user_admin">Team Signout</a></li>
                 <li><a href="#/view_timelogs" ng-if="user_admin">Timelogs</a></li>
                 <li><a href="#/view_teams" ng-if="user_logged_in">Teams</a></li>

@@ -70,7 +70,8 @@ function getTeams($db, $sessionKey) {
     if (!getUserID($db, $sessionKey)) {
         return false;
     }
-    $query = "SELECT * FROM team";
+    $query = "SELECT * FROM team
+                ORDER BY (CASE team_number WHEN 3506 THEN 0 ELSE team_number END)";
     $result = executeSelect($db, $query);
     if ($result) {
         $teams = [];
@@ -113,6 +114,23 @@ function getUsers($db, $teamNumber, $sessionKey) {
     } else {
         return false;
     }
+}
+
+function getUser($db, $userId, $sessionKey) {
+    if (!isAdmin($db, $sessionKey)) {
+        return false;
+    }
+    $query = "SELECT user_name, user.user_id, user_email, user_mentor, user_admin, user.team_number, team.team_name
+                FROM user
+                JOIN team ON team.team_number = user.team_number
+                WHERE user_id = ?";
+    $result = executeSelect($db, $query, "s", $userId);
+    if ($result) {
+        while ($row = $result->fetch_assoc()) {
+            return $row;
+        }
+    }
+    return false;
 }
 
 function addTimelog($db, $userId, $sessionKey) {
@@ -222,14 +240,16 @@ function getLoggedInUsers($db, $sessionKey) {
     if (!isAdmin($db, $sessionKey)) {
         return false;
     }
-    $query = "SELECT user.user_id, user_name FROM timelog
+    $query = "SELECT user.user_id, user_name, user.team_number, team.team_name FROM timelog
                 JOIN user ON user.user_id = timelog.user_id
+                JOIN team ON user.team_number = team.team_number
                 WHERE timelog_type = 'IN'
                 AND (timelog_timestamp, timelog.user_id) IN
                 (SELECT MAX(timelog_timestamp), user_id
                 FROM timelog
                 WHERE timelog_timestamp
-                GROUP BY timelog.user_id)";
+                GROUP BY timelog.user_id)
+                ORDER BY (CASE team.team_number WHEN 3506 THEN 0 ELSE team.team_number END) ASC";
     $result = executeSelect($db, $query);
     if ($result) {
         $users = [];
@@ -299,6 +319,21 @@ function getSessionKey() {
     $headers = getallheaders();
     if (isset($headers["SESSION_KEY"])) {
         return $headers["SESSION_KEY"];
+    }
+    return false;
+}
+
+function getCurrentUser($db, $sessionKey) {
+    $query = "SELECT user_name, user.user_id, user_email, user_mentor, user_admin, user.team_number, team.team_name
+                FROM session
+                JOIN user ON user.user_id = session.user_id
+                JOIN team ON team.team_number = user.team_number
+                WHERE session_key = ?";
+    $result = executeSelect($db, $query, "s", $sessionKey);
+    if ($result) {
+        while ($row = $result->fetch_assoc()) {
+            return $row;
+        }
     }
     return false;
 }

@@ -23,7 +23,7 @@
                 <tr ng-repeat="log in logsListed track by $index">
                     <td>{{ log["user_id"] }}</td>
                     <td>{{ log["user_name"] }}</td>
-                    <td>{{ log["timelog_timestamp"] }}</td>
+                    <td>{{ getTime(log["timelog_timestamp"]) }}</td>
                     <td>{{ log["timelog_type"].toLowerCase() }}</td>
                 </tr>
             </tbody>

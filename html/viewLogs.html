@@ -25,6 +25,7 @@
                     <td>{{ log["user_name"] }}</td>
                     <td>{{ getTime(log["timelog_timestamp"]) }}</td>
                     <td>{{ log["timelog_type"].toLowerCase() }}</td>
+                    <td ng-if="user_admin"><a ng-href="#/edit_log?id={{ log['timelog_id'] }}">Edit</a></td>
                 </tr>
             </tbody>
         </table>

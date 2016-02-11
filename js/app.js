@@ -144,6 +144,28 @@ app.service("timesheetService", function ($http, $q) {
         return deferred.promise;
     };
     
+    this.getTimelog = function (timelogId, sessionKey) {
+        var config, deferred;
+        config = {
+            method: "GET",
+            url: location.pathname + "php/getTimelog.php",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "SESSION_KEY": sessionKey
+            },
+            params: {
+                timelog_id: timelogId
+            }
+        };
+        deferred = $q.defer();
+        $http(config).success(function (data) {
+            deferred.resolve(data);
+        }).error(function (data) {
+            deferred.reject(data);
+        });
+        return deferred.promise;
+    };
+    
     this.getLogs = function (filters, sessionKey) {
         var config, deferred;
         config = {
@@ -173,6 +195,31 @@ app.service("timesheetService", function ($http, $q) {
                 "Content-Type": "application/x-www-form-urlencoded",
                 "SESSION_KEY": sessionKey
             }
+        };
+        deferred = $q.defer();
+        $http(config).success(function (data) {
+            deferred.resolve(data);
+        }).error(function (data) {
+            deferred.reject(data);
+        });
+        return deferred.promise;
+    };
+    
+    this.updateTimelog = function (timelogId, userId, timelogType, timestamp, sessionKey) {
+        var config, deferred;
+        config = {
+            method: "POST",
+            url: location.pathname + "php/updateTimelog.php",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "SESSION_KEY": sessionKey
+            },
+            data: $.param({
+                timelog_id: timelogId,
+                user_id: userId,
+                timelog_type: timelogType,
+                timelog_timestamp: timestamp
+            })
         };
         deferred = $q.defer();
         $http(config).success(function (data) {
@@ -602,6 +649,33 @@ app.controller("AddUserController", function ($scope, $rootScope, $location, use
     });
 });
 
+app.controller("EditLogController", function ($scope, $rootScope, $location, timesheetService) {
+    "use strict";
+    
+    var timelogId;
+    
+    $scope.submit = function () {
+        timesheetService.updateTimelog(timelogId, $scope.user_id, $scope.timelog_type,
+                                       $scope.timelog_timestamp, localStorage.SESSION_KEY).then(function (data) {
+            displayMessage("Timelog updated sucessfully", "success");
+            $location.path("/view_timelogs");
+        }, function (data) {
+            console.log(data);
+        });
+    };
+    
+    timelogId = $location.search().id;
+    if (timelogId) {
+        timesheetService.getTimelog(timelogId, localStorage.SESSION_KEY).then(function (data) {
+            $scope.user_id = data.timelog.user_id;
+            $scope.timelog_timestamp = data.timelog.timelog_timestamp;
+            $scope.timelog_type = data.timelog.timelog_type;
+        }, function (data) {
+            console.log(data);
+        });
+    }
+});
+
 app.config(['$routeProvider', function ($routeProvider, $locationProvider) {
     'use strict';
 
@@ -629,6 +703,8 @@ app.config(['$routeProvider', function ($routeProvider, $locationProvider) {
         templateUrl: 'html/addUser.html'
     }).when('/profile', {
         templateUrl: 'html/profile.html'
+    }).when('/edit_log', {
+        templateUrl: 'html/editLog.html'
     }).otherwise({
         redirectTo: '/'
     });

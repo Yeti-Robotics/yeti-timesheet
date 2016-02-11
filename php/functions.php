@@ -154,6 +154,17 @@ function addTimelog($db, $userId, $sessionKey) {
     return executeQuery($db, $query, "ss", $userId, $timelogType);
 }
 
+function getTimelog($db, $timelogId) {
+    $query = "SELECT * FROM timelog WHERE timelog_id = ?";
+    $result = executeSelect($db, $query, "i", $timelogId);
+    if ($result) {
+        while ($row = $result->fetch_assoc()) {
+            return $row;
+        }
+    }
+    return false;
+}
+
 function getTimelogs($db, $filters, $sessionKey) {
     if (!isAdmin($db, $sessionKey)) {
         return false;
@@ -231,6 +242,20 @@ function getLastTimelogs($db, $limit, $sessionKey) {
             $logs[] = $row;
         }
         return $logs;
+    } else {
+        return false;
+    }
+}
+
+function updateTimelog($db, $timelogId, $userId, $timelogType, $timestamp, $sessionKey) {
+    if (!isAdmin($db, $sessionKey)) {
+        return false;
+    }
+    if (preg_match("/\d*-[0-1]\d-[0-3]\d [0-2]\d:[0-5]\d:\d{2}/", $timestamp)) {
+        $query = "UPDATE timelog
+                    SET user_id = ?, timelog_type = ?, timelog_timestamp = ?
+                    WHERE timelog.timelog_id = ?";
+        return executeQuery($db, $query, "sssi", $userId, $timelogType, $timestamp, $timelogId);
     } else {
         return false;
     }

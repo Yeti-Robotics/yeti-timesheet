@@ -1,0 +1,19 @@
+<div class="container-fluid" ng-controller="EditLogController" ng-if="user_admin">
+    <h1>Edit Timelog</h1>
+    <form id="add_user_form" ng-submit="submit()">
+        <div class="form-group" required>
+            <label>User ID:</label>
+            <input class="form-control" ng-model="user_id" type="text">
+            <label>Type:</label>
+            <select class="form-control" ng-model="timelog_type">
+                <option value="IN">IN</option>
+                <option value="OUT">OUT</option>
+            </select>
+            <label>Timestamp:</label>
+            <input class="form-control" ng-model="timelog_timestamp" type="datetime">
+        </div>
+        <div class="form-group">
+            <button class="btn btn-primary btn-block" type="submit">Submit</button>
+        </div>
+    </form>
+</div>

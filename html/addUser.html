@@ -22,8 +22,9 @@
             <label for="user_password_confirm">Confirm Password:</label>
             <input class="form-control" id="user_password_confirm" ng-model="formData.user_password_confirm" ng-change="doPassesMatch()" type="password">
 
-            <label for="user_number">Mentor?</label>
-            <input id="user_number" ng-model="formData.user_mentor" type="checkbox">
+            <div class="checkbox">
+                <label><input ng-model="formData.user_mentor" type="checkbox">Mentor</label>
+            </div>
         </div>
         <div class="form-group">
             <button class="btn btn-primary btn-block" type="submit">Submit</button>

@@ -615,10 +615,9 @@ app.controller("ViewLogsController", function ($scope, $http, $location, timeshe
     $scope.movePage = function (displacement) {
         $scope.goToPage(parseInt($location.search().page, 0) + displacement);
     };
-    
+   
     $scope.editLog = function (timelogId) {
-        $location.path("/edit_log");
-        $location.search("id", timelogId);
+        $location.path("/edit_log/" + timelogId);
     };
     
     searchData = $location.search();
@@ -691,7 +690,7 @@ app.controller("ViewTeamsController", function ($scope, $rootScope, $location, u
     };
 });
 
-app.controller("ProfileController", function ($scope, $rootScope, $location, userService) {
+app.controller("ProfileController", function ($scope, $rootScope, $location, $routeParams, userService) {
     "use strict";
     
     var currentYear;
@@ -741,7 +740,7 @@ app.controller("ProfileController", function ($scope, $rootScope, $location, use
         });
     };
     
-    $scope.userId = $location.search().id;
+    $scope.userId = $routeParams.userId;
     if ($scope.userId) {
         $scope.loadUserById($scope.userId);
         $scope.loadUserTime();
@@ -784,7 +783,7 @@ app.controller("AddUserController", function ($scope, $rootScope, $location, use
     });
 });
 
-app.controller("EditLogController", function ($scope, $rootScope, $location, timesheetService) {
+app.controller("EditLogController", function ($scope, $rootScope, $location, $routeParams, timesheetService) {
     "use strict";
     
     var timelogId;
@@ -794,7 +793,6 @@ app.controller("EditLogController", function ($scope, $rootScope, $location, tim
                                        $scope.timelog_timestamp, localStorage.SESSION_KEY).then(function (data) {
             displayMessage("Timelog updated sucessfully.", "success");
             $location.path("/view_timelogs");
-            $location.search("id", null);
         }, function (data) {
             console.log(data);
         });
@@ -804,13 +802,12 @@ app.controller("EditLogController", function ($scope, $rootScope, $location, tim
         timesheetService.deleteTimelog(timelogId, localStorage.SESSION_KEY).then(function (data) {
             displayMessage("Timelog deleted.", "success");
             $location.path("/view_timelogs");
-            $location.search("id", null);
         }, function (data) {
             console.log(data);
         });
     };
     
-    timelogId = $location.search().id;
+    timelogId = $routeParams.timelogId;
     if (timelogId) {
         timesheetService.getTimelog(timelogId, localStorage.SESSION_KEY).then(function (data) {
             $scope.user_id = data.timelog.user_id;
@@ -849,7 +846,9 @@ app.config(['$routeProvider', function ($routeProvider, $locationProvider) {
         templateUrl: 'html/addUser.html'
     }).when('/profile', {
         templateUrl: 'html/profile.html'
-    }).when('/edit_log', {
+    }).when('/profile/:userId', {
+        templateUrl: 'html/profile.html'
+    }).when('/edit_log/:timelogId', {
         templateUrl: 'html/editLog.html'
     }).otherwise({
         redirectTo: '/'

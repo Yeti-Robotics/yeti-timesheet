@@ -28,7 +28,7 @@
             <tr ng-repeat="user in usersListed track by $index">
                 <td>{{ user["user_name"] }}</td>
                 <td>{{ user["user_id"] }}</td>
-                <td ng-if="user_admin"><a ng-href="#/profile?id={{ user['user_id'] }}">Profile</a></td>
+                <td ng-if="user_admin"><a ng-href="#/profile/{{ user['user_id'] }}">Profile</a></td>
             </tr>
             <tr>
                 <td><a href="#/add_user">Add Member</a></td>

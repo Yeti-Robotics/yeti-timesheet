@@ -723,15 +723,6 @@ app.controller("ProfileController", function ($scope, $rootScope, $location, $ro
     $scope.loadUserTime = function () {
         userService.getUserTime($scope.userId, $scope.timeStart, $scope.timeEnd, localStorage.SESSION_KEY).then(function (data) {
             var totalTime = parseInt(data.time, 0);
-            if (!totalTime) {
-                totalTime = 0;
-            }
-            if (totalTime < 0) {
-                totalTime += Math.floor(Date.now() / 1000);
-            }
-            if (totalTime > data.start_time) {
-                totalTime -= data.start_time;
-            }
             $scope.userTime.totalSeconds = totalTime;
             $scope.userTime.hours = Math.floor(totalTime / 3600);
             totalTime -= $scope.userTime.hours * 3600;

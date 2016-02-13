@@ -137,15 +137,13 @@ function getUserTime($db, $userId, $timeStart, $timeEnd, $sessionKey) {
     if (getUserID($db, $sessionKey) != $userId && !isAdmin($db, $sessionKey)) {
         return false;
     }
-    $query = "SELECT SUM(UNIX_TIMESTAMP(CASE timelog_type WHEN 'OUT' THEN timelog_timestamp END))
-                - SUM(UNIX_TIMESTAMP(CASE timelog_type WHEN 'IN' THEN timelog_timestamp END))
-                AS user_time,
-                UNIX_TIMESTAMP(?) AS start_time
+    $query = "SELECT IFNULL(SUM(UNIX_TIMESTAMP(IFNULL(timelog_timeout, NOW())) - UNIX_TIMESTAMP(timelog_timein)),0)
+                AS user_time
                 FROM timelog
                 WHERE user_id = ?
-                AND timelog_timestamp > ?
-                AND timelog_timestamp < ?";
-    $result = executeSelect($db, $query, "ssss", $timeStart, $userId, $timeStart, $timeEnd);
+                AND timelog_timein > ?
+                AND timelog_timeout < ?";
+    $result = executeSelect($db, $query, "sss", $userId, $timeStart, $timeEnd);
     if ($result) {
         while ($row = $result->fetch_assoc()) {
             return $row;

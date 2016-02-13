@@ -11,7 +11,6 @@ if (isset($_GET["user_id"]) && isset($_GET["time_start"]) && isset($_GET["time_e
     $result = getUserTime($db, $_GET["user_id"], $_GET["time_start"], $_GET["time_end"], getSessionKey());
     if ($result) {
         $response["time"] = $result["user_time"];
-        $response["start_time"] = $result["start_time"];
     } else {
         http_response_code(500);
         $response["error"] = "Error getting user time.";

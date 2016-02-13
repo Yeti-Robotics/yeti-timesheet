@@ -327,14 +327,10 @@ function getLoggedInUsers($db, $sessionKey) {
 
 function teamSignout($db, $teamNumber) {
     // add a timelog for each team member with an odd number of timelogs
-    $query = "INSERT INTO timelog (user_id, timelog_type)
-                SELECT user.user_id, 'OUT' as timelog_type
-                FROM timelog
-                LEFT JOIN user
-                ON user.user_id = timelog.user_id
-                WHERE user.team_number = ?
-                GROUP BY user_id
-                HAVING COUNT(timelog.timelog_id) % 2 = 1";
+    $query = "UPDATE timelog SET timelog_timeout = NOW()
+                WHERE timelog.user_id IN
+                (SELECT user_id FROM user WHERE team_number = ?)
+                AND timelog_timeout IS NULL";
     return executeQuery($db, $query, "i", $teamNumber);
 }
 

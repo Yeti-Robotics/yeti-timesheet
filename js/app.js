@@ -595,20 +595,16 @@ app.controller("ViewLogsController", function ($scope, $http, $location, timeshe
     };
     
     $scope.getTime = function (unixTime) {
+        if (typeof (unixTime) !== "number") {
+            return "";
+        }
         unixTime *= 1000;
         return new Date(unixTime).toLocaleTimeString();
     };
     
     $scope.getDate = function (unixTime) {
-        var dateInfo, i;
         unixTime *= 1000;
-        dateInfo = new Date(unixTime).toLocaleDateString().split("/");
-        for (i = 0; i < dateInfo.length; i += 1) {
-            if (dateInfo[i].length < 2) {
-                dateInfo[i] = "0" + dateInfo[i];
-            }
-        }
-        return dateInfo[2] + "-" + dateInfo[0] + "-" + dateInfo[1];
+        return new Date(unixTime).toLocaleDateString();
     };
     
     $scope.goToPage = function (pageNumber) {

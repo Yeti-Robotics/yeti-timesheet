@@ -27,17 +27,17 @@
                 <th>User ID</th>
                 <th>Name</th>
                 <th>Date</th>
-                <th>Time</th>
-                <th>In/Out</th>
+                <th>Time In</th>
+                <th>Time Out</th>
                 <th></th>
             </thead>
             <tbody>
                 <tr ng-repeat="log in logsListed track by $index">
                     <td>{{ log["user_id"] }}</td>
                     <td>{{ log["user_name"] }}</td>
-                    <td>{{ getDate(log["timelog_timestamp"]) }}</td>
-                    <td>{{ getTime(log["timelog_timestamp"]) }}</td>
-                    <td>{{ log["timelog_type"].toLowerCase() }}</td>
+                    <td>{{ getDate(log["timelog_timein"]) }}</td>
+                    <td>{{ getTime(log["timelog_timein"]) }}</td>
+                    <td>{{ getTime(log["timelog_timeout"]) }}</td>
                     <td ng-if="user_admin"><a class="clickable" ng-click="editLog(log['timelog_id'])">Edit</a></td>
                 </tr>
             </tbody>

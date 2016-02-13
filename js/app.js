@@ -534,6 +534,9 @@ app.controller("AdminController", function ($scope, $http, $location, timesheetS
     };
     
     $scope.getTime = function (unixTime) {
+        if (typeof (unixTime) !== "number") {
+            return "";
+        }
         unixTime *= 1000;
         return new Date(unixTime).toLocaleTimeString();
     };

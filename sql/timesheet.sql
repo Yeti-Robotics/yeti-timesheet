@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: 127.0.0.1
--- Generation Time: Feb 05, 2016 at 02:57 AM
+-- Generation Time: Feb 13, 2016 at 11:12 PM
 -- Server version: 10.1.8-MariaDB
 -- PHP Version: 5.6.14
 
@@ -58,8 +58,8 @@ DROP TABLE IF EXISTS `timelog`;
 CREATE TABLE `timelog` (
   `timelog_id` int(11) NOT NULL,
   `user_id` varchar(20) NOT NULL,
-  `timelog_type` enum('IN','OUT') NOT NULL,
-  `timelog_timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+  `timelog_timein` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `timelog_timeout` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
@@ -105,7 +105,8 @@ ALTER TABLE `team`
 ALTER TABLE `timelog`
   ADD PRIMARY KEY (`timelog_id`),
   ADD KEY `user_id` (`user_id`),
-  ADD KEY `timesheet_timestamp` (`timelog_timestamp`);
+  ADD KEY `timelog_timein` (`timelog_timein`),
+  ADD KEY `timelog_timeout` (`timelog_timeout`);
 
 --
 -- Indexes for table `user`

@@ -158,21 +158,24 @@ function addTimelog($db, $userId, $sessionKey) {
     if (!isAdmin($db, $sessionKey)) {
         return false;
     }
-    $query = "SELECT timelog_type, (CASE timelog_type WHEN 'IN' THEN 'OUT' ELSE 'IN' END) AS type
+    $query = "SELECT *
                 FROM timelog
-                WHERE user_id=?
-                ORDER BY timelog_timestamp DESC, timelog_id DESC
+                WHERE user_id = ?
+                AND timelog_timeout IS NULL
+                ORDER BY timelog_timein DESC
                 LIMIT 0,1";
     $result = executeSelect($db, $query, "s", $userId);
-    $timelogType = "IN";
     if ($result) {
-        while ($row = $result->fetch_assoc()) {
-            $timelogType = $row["type"];
+        $row = $result->fetch_assoc();
+        if ($row) {
+            $query = "UPDATE timelog SET timelog_timeout = NOW() WHERE timelog_id = ?";
+            return executeQuery($db, $query, "i", $row["timelog_id"]);
+        } else {
+            $query = "INSERT INTO timelog (user_id) VALUES (?)";
+            return executeQuery($db, $query, "s", $userId);
         }
     }
-    $query = "INSERT INTO timelog (user_id, timelog_type)
-                VALUES (?, ?)";
-    return executeQuery($db, $query, "ss", $userId, $timelogType);
+    return false;
 }
 
 function getTimelog($db, $timelogId) {
@@ -193,7 +196,8 @@ function getTimelogs($db, $filters, $sessionKey) {
     $filterNames = ["team_name", "team_number", "user_name", "user_id"];
     $paramBindTypes = "";
     $paramsToBind = [];
-    $query = "SELECT timelog_id, timelog.user_id, UNIX_TIMESTAMP(timelog_timestamp) AS timelog_timestamp, timelog_type, user_name, team_number
+    $query = "SELECT timelog_id, timelog.user_id, UNIX_TIMESTAMP(timelog_timein) AS timelog_timein,
+                UNIX_TIMESTAMP(timelog_timeout) AS timelog_timeout, user_name, team_number
                 FROM timelog
                 LEFT JOIN user
                 ON timelog.user_id = user.user_id
@@ -226,9 +230,9 @@ function getTimelogs($db, $filters, $sessionKey) {
         $query .= ")";
     }
     if ($filters["time_limit"] != null) {
-        $query .= " AND timelog_timestamp > DATE_SUB(CURRENT_TIMESTAMP, INTERVAL 1 DAY)";
+        $query .= " AND timelog_timein > DATE_SUB(CURRENT_TIMESTAMP, INTERVAL 1 DAY)";
     }
-    $query .= " ORDER BY timelog_timestamp DESC, timelog_id DESC";
+    $query .= " ORDER BY timelog_timein DESC, timelog_id DESC";
     $filter = $filters["num_limit"];
     if ($filter != null && is_numeric($filter)) {
         if (!($filters["num_low"] && is_numeric($filters["num_low"]))) {
@@ -309,12 +313,7 @@ function getLoggedInUsers($db, $sessionKey) {
     $query = "SELECT user.user_id, user_name, user.team_number, team.team_name FROM timelog
                 JOIN user ON user.user_id = timelog.user_id
                 JOIN team ON user.team_number = team.team_number
-                WHERE timelog_type = 'IN'
-                AND (timelog_timestamp, timelog.user_id) IN
-                (SELECT MAX(timelog_timestamp), user_id
-                FROM timelog
-                WHERE timelog_timestamp
-                GROUP BY timelog.user_id)
+                WHERE timelog_timeout IS NULL
                 ORDER BY (CASE team.team_number WHEN 3506 THEN 0 ELSE team.team_number END) ASC";
     $result = executeSelect($db, $query);
     if ($result) {

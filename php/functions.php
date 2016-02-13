@@ -282,18 +282,14 @@ function getLastTimelogs($db, $limit, $sessionKey) {
     }
 }
 
-function updateTimelog($db, $timelogId, $userId, $timelogType, $timestamp, $sessionKey) {
+function updateTimelog($db, $timelogId, $timelogIn, $timelogOut, $sessionKey) {
     if (!isAdmin($db, $sessionKey)) {
         return false;
     }
-    if (preg_match("/\d*-[0-1]\d-[0-3]\d [0-2]\d:[0-5]\d:\d{2}/", $timestamp)) {
-        $query = "UPDATE timelog
-                    SET user_id = ?, timelog_type = ?, timelog_timestamp = ?
-                    WHERE timelog.timelog_id = ?";
-        return executeQuery($db, $query, "sssi", $userId, $timelogType, $timestamp, $timelogId);
-    } else {
-        return false;
-    }
+    $query = "UPDATE timelog SET
+                timelog_timein = ?, timelog_timeout = ?
+                WHERE timelog.timelog_id = ?";
+    return executeQuery($db, $query, "ssi", $timelogIn, $timelogOut, $timelogId);
 }
 
 function deleteTimelog($db, $timelogId, $sessionKey) {

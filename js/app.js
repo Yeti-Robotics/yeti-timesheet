@@ -204,7 +204,7 @@ app.service("timesheetService", function ($http, $q) {
         return deferred.promise;
     };
     
-    this.updateTimelog = function (timelogId, userId, timelogType, timestamp, sessionKey) {
+    this.updateTimelog = function (timelogId, timein, timeout, sessionKey) {
         var config, deferred;
         config = {
             method: "POST",
@@ -215,9 +215,8 @@ app.service("timesheetService", function ($http, $q) {
             },
             data: $.param({
                 timelog_id: timelogId,
-                user_id: userId,
-                timelog_type: timelogType,
-                timelog_timestamp: timestamp
+                timelog_timein: timein,
+                timelog_timeout: timeout
             })
         };
         deferred = $q.defer();
@@ -614,10 +613,6 @@ app.controller("ViewLogsController", function ($scope, $http, $location, timeshe
     $scope.movePage = function (displacement) {
         $scope.goToPage(parseInt($location.search().page, 0) + displacement);
     };
-   
-    $scope.editLog = function (timelogId) {
-        $location.path("/edit_log/" + timelogId);
-    };
     
     searchData = $location.search();
     for (i = 0; i < filterNames.length; i += 1) {
@@ -779,8 +774,7 @@ app.controller("EditLogController", function ($scope, $rootScope, $location, $ro
     var timelogId;
     
     $scope.submit = function () {
-        timesheetService.updateTimelog(timelogId, $scope.user_id, $scope.timelog_type,
-                                       $scope.timelog_timestamp, localStorage.SESSION_KEY).then(function (data) {
+        timesheetService.updateTimelog(timelogId, $scope.timelog_timein, $scope.timelog_timeout, localStorage.SESSION_KEY).then(function (data) {
             displayMessage("Timelog updated sucessfully.", "success");
             $location.path("/view_timelogs");
         }, function (data) {
@@ -800,9 +794,8 @@ app.controller("EditLogController", function ($scope, $rootScope, $location, $ro
     timelogId = $routeParams.timelogId;
     if (timelogId) {
         timesheetService.getTimelog(timelogId, localStorage.SESSION_KEY).then(function (data) {
-            $scope.user_id = data.timelog.user_id;
-            $scope.timelog_timestamp = data.timelog.timelog_timestamp;
-            $scope.timelog_type = data.timelog.timelog_type;
+            $scope.timelog_timein = data.timelog.timelog_timein;
+            $scope.timelog_timeout = data.timelog.timelog_timeout;
         }, function (data) {
             console.log(data);
         });

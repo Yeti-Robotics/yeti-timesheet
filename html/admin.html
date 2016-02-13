@@ -34,6 +34,7 @@
                 <th>Name</th>
                 <th>Time In</th>
                 <th>Time Out</th>
+                <th></th>
             </thead>
             <tbody>
                 <tr ng-repeat="log in logsListed track by $index">
@@ -41,6 +42,7 @@
                     <td>{{ log["user_name"] }}</td>
                     <td>{{ getTime(log["timelog_timein"]) }}</td>
                     <td>{{ getTime(log["timelog_timeout"]) }}</td>
+                    <td ng-if="user_admin"><a ng-href="#/edit_log/{{ log['timelog_id'] }}">Edit</a></td>
                 </tr>
             </tbody>
         </table>

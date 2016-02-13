@@ -38,7 +38,7 @@
                     <td>{{ getDate(log["timelog_timein"]) }}</td>
                     <td>{{ getTime(log["timelog_timein"]) }}</td>
                     <td>{{ getTime(log["timelog_timeout"]) }}</td>
-                    <td ng-if="user_admin"><a class="clickable" ng-click="editLog(log['timelog_id'])">Edit</a></td>
+                    <td ng-if="user_admin"><a ng-href="#/edit_log/{{ log['timelog_id'] }}">Edit</a></td>
                 </tr>
             </tbody>
         </table>

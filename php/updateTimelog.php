@@ -7,10 +7,9 @@ header("Content-Type: application/json");
 
 $response = [];
 
-if (isset($_POST["timelog_id"]) && isset($_POST["user_id"])
-    && isset($_POST["timelog_type"]) && isset($_POST["timelog_timestamp"])) {
-    $success = updateTimelog($db, $_POST["timelog_id"], $_POST["user_id"],
-                       $_POST["timelog_type"], $_POST["timelog_timestamp"], getSessionKey());
+if (isset($_POST["timelog_id"]) && isset($_POST["timelog_timein"]) && isset($_POST["timelog_timeout"])) {
+    $success = updateTimelog($db, $_POST["timelog_id"], $_POST["timelog_timein"],
+                       $_POST["timelog_timeout"], getSessionKey());
     if ($success) {
         http_response_code(200);
     } else {

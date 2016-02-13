@@ -4,15 +4,11 @@
         <form id="team_out_form" ng-submit="submit()">
             <div class="form-group">
                 <label for="team_number">Team Number:</label>
-                <input id="team_number" ng-model="team_number" type="text" class="form-control"/>
+                <input id="team_number" ng-model="team_number" type="text" class="form-control" required/>
             </div>
             <div class="form-group">
                 <button class="btn btn-block btn-primary" type="submit">Submit</button>
             </div>
         </form>
     </fieldset>
-</div>
-<div class="alert alert-success" id="timelog-success" ng-if="lastLogged">
-    <a class="close" data-dismiss="alert" aria-label="close">&times;</a>
-    <strong>Team {{ lastLogged }} signed out.</strong>
 </div>

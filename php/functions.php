@@ -133,6 +133,27 @@ function getUser($db, $userId, $sessionKey) {
     return false;
 }
 
+function getUserTime($db, $userId, $timeStart, $timeEnd, $sessionKey) {
+    if (getUserID($db, $sessionKey) != $userId && !isAdmin($db, $sessionKey)) {
+        return false;
+    }
+    $query = "SELECT SUM(UNIX_TIMESTAMP(CASE timelog_type WHEN 'OUT' THEN timelog_timestamp END))
+                - SUM(UNIX_TIMESTAMP(CASE timelog_type WHEN 'IN' THEN timelog_timestamp END))
+                AS user_time,
+                UNIX_TIMESTAMP(?) AS start_time
+                FROM timelog
+                WHERE user_id = ?
+                AND timelog_timestamp > ?
+                AND timelog_timestamp < ?";
+    $result = executeSelect($db, $query, "ssss", $timeStart, $userId, $timeStart, $timeEnd);
+    if ($result) {
+        while ($row = $result->fetch_assoc()) {
+            return $row;
+        }
+    }
+    return false;
+}
+
 function addTimelog($db, $userId, $sessionKey) {
     if (!isAdmin($db, $sessionKey)) {
         return false;
@@ -169,7 +190,9 @@ function getTimelogs($db, $filters, $sessionKey) {
     if (!isAdmin($db, $sessionKey)) {
         return false;
     }
-    $filterNames = ["user_name", "user_id", "team_name", "team_number"];
+    $filterNames = ["team_name", "team_number", "user_name", "user_id"];
+    $paramBindTypes = "";
+    $paramsToBind = [];
     $query = "SELECT timelog_id, timelog.user_id, UNIX_TIMESTAMP(timelog_timestamp) AS timelog_timestamp, timelog_type, user_name, team_number
                 FROM timelog
                 LEFT JOIN user
@@ -179,38 +202,48 @@ function getTimelogs($db, $filters, $sessionKey) {
                 WHERE team_number in
                 (SELECT team_number FROM team";
     $foundFilter = false;
-    for ($i = 2; $i < 4; $i++) {
-        $filterName = $filterNames[$i];
-        $filter = $filters[$filterName];
-        if ($filter != null) {
-            if ($foundFilter) {
-                $query .= " AND";
-            } else {
-                $query .= " WHERE";
+    for ($j = 0; $j < 2; $j++) {
+        for ($i = $j*2; $i < ($j+1)*2; $i++) {
+            $filterName = $filterNames[$i];
+            $filter = $filters[$filterName];
+            if ($filter) {
+                if ($foundFilter || $j == 1) {
+                    $query .= " AND";
+                } else {
+                    $query .= " WHERE";
+                }
+                $equal = "=";
+                if ($i % 2 == 0) {
+                    $equal = "LIKE";
+                    $filter = "%$filter%";
+                }
+                $query .= " $filterName $equal ?";
+                $paramsToBind[] = $filter;
+                $paramBindTypes .= "s";
+                $foundFilter = true;
             }
-            $query = $query . sprintf(" LCASE(%s) = LCASE('%s')", $filterName, $filter);
-            $foundFilter = true;
         }
+        $query .= ")";
     }
-    $query .= ")";
-    for ($i = 0; $i < 2; $i++) {
-        $filterName = $filterNames[$i];
-        $filter = $filters[$filterName];
-        if ($filter) {
-            $query .= sprintf(" AND LCASE(%s) = LCASE('%s')", $filterName, $filter);
-        }
-    }
-    $query .= ")";
     if ($filters["time_limit"] != null) {
         $query .= " AND timelog_timestamp > DATE_SUB(CURRENT_TIMESTAMP, INTERVAL 1 DAY)";
     }
     $query .= " ORDER BY timelog_timestamp DESC, timelog_id DESC";
     $filter = $filters["num_limit"];
     if ($filter != null && is_numeric($filter)) {
-        $query .= " LIMIT $filter";
+        if (!($filters["num_low"] && is_numeric($filters["num_low"]))) {
+            $filters["num_low"] = 0;
+        }
+        $query .= " LIMIT ?,?";
+        $paramsToBind[] = $filters["num_low"];
+        $paramsToBind[] = $filter;
+        $paramBindTypes .= "ii";
     }
     
-    $result = executeSelect($db, $query);
+    if (strlen($paramBindTypes) > 0) {
+        array_unshift($paramsToBind, $paramBindTypes);
+    }
+    $result = executeSelect($db, $query, ...$paramsToBind);
     if ($result) {
         $logs = [];
         while ($row = $result->fetch_assoc()) {
@@ -259,6 +292,14 @@ function updateTimelog($db, $timelogId, $userId, $timelogType, $timestamp, $sess
     } else {
         return false;
     }
+}
+
+function deleteTimelog($db, $timelogId, $sessionKey) {
+    if (!isAdmin($db, $sessionKey)) {
+        return false;
+    }
+    $query = "DELETE FROM timelog WHERE timelog_id = ?";
+    return executeQuery($db, $query, "i", $timelogId);
 }
 
 function getLoggedInUsers($db, $sessionKey) {

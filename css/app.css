@@ -25,6 +25,12 @@
     cursor: pointer;
 }
 
+.user-label-container .team .close-icon {
+    display: inline-block;
+    margin-left: 2px;
+    cursor: pointer;
+}
+
 .user-label-container .team-container {
     margin-top: 5px;
 }
@@ -34,4 +40,8 @@
     padding-bottom: 2px;
     margin-bottom: 2px;
     border-bottom: 2px solid #CCC;
+}
+
+.clickable {
+    cursor: pointer;
 }

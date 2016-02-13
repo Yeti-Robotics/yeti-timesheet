@@ -2,20 +2,31 @@
     <form id="timelog_filter_form" ng-submit="submit()">
         <legend>Timelogs</legend>
         <div class="form-group">
-            <label for="user_name">Name:</label>
-            <input id="user_name" ng-model="filters.user_name" type="text" class="form-control"/>
-            <label for="user_id">User ID:</label>
-            <input id="user_id" ng-model="filters.user_id" type="text" class="form-control"/>
-            <label for="team_name">Team Name:</label>
-            <input id="team_name" ng-model="filters.team_name" type="text" class="form-control"/>
-            <label for="team_number">Team Number:</label>
-            <input id="team_number" ng-model="filters.team_number" type="number" class="form-control"/>
+            <div class="row form-group">
+                <div class="col-xs-6">
+                    <label for="user_name">Name:</label>
+                    <input id="user_name" ng-model="user_name" type="text" class="form-control"/>
+                </div>
+                <div class="col-xs-6">
+                    <label for="user_id">User ID:</label>
+                    <input id="user_id" ng-model="user_id" type="text" class="form-control"/>
+                </div>
+                <div class="col-xs-6">
+                    <label for="team_name">Team Name:</label>
+                    <input id="team_name" ng-model="team_name" type="text" class="form-control"/>
+                </div>
+                <div class="col-xs-6">
+                    <label for="team_number">Team Number:</label>
+                    <input id="team_number" ng-model="team_number" type="number" class="form-control"/>
+                </div>
+            </div>
         </div>
-        <button class="btn btn-primary btn-block" type="submit">Submit</button>
-        <table class="table table-condensed" ng-if="logsListed[0]">
+        <button class="btn btn-primary btn-block" type="submit">Search</button>
+        <table class="table table-condensed table-striped" ng-if="logsListed[0]">
             <thead>
                 <th>User ID</th>
                 <th>Name</th>
+                <th>Date</th>
                 <th>Time</th>
                 <th>In/Out</th>
             </thead>
@@ -23,11 +34,24 @@
                 <tr ng-repeat="log in logsListed track by $index">
                     <td>{{ log["user_id"] }}</td>
                     <td>{{ log["user_name"] }}</td>
+                    <td>{{ getDate(log["timelog_timestamp"]) }}</td>
                     <td>{{ getTime(log["timelog_timestamp"]) }}</td>
                     <td>{{ log["timelog_type"].toLowerCase() }}</td>
-                    <td ng-if="user_admin"><a ng-href="#/edit_log?id={{ log['timelog_id'] }}">Edit</a></td>
+                    <td ng-if="user_admin"><a class="clickable" ng-click="editLog(log['timelog_id'])">Edit</a></td>
                 </tr>
             </tbody>
         </table>
+        <div class="row form-group" ng-if="filters.num_limit">
+            <div class="col-xs-6">
+                <button ng-if="prevPageExists" class="btn btn-block" ng-click="movePage(-1)">
+                    Previous Page
+                </button>
+            </div>
+            <div class="col-xs-6">
+                <button ng-if="nextPageExists" class="btn btn-block" ng-click="movePage(1)">
+                    Next Page
+                </button>
+            </div>
+        </div>
     </form>
 </div>

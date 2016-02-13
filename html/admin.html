@@ -5,7 +5,7 @@
             <div class="form-group">
                 <form ng-submit="submit()">
                     <div class="form-group">
-                        <label>User ID</label>
+                        <label>User ID:</label>
                         <input class="form-control" type="text" placeholder="Enter your user ID." ng-model="user_id" required/>
                     </div>
                     <button class="btn btn-block btn-primary" type="submit">Submit</button>
@@ -16,7 +16,10 @@
         <div class="user-label-container">
             <div class="section-title">Currently Logged In</div>
             <div class = "team-container" ng-repeat="team in loggedInUsers track by $index">
-                <div class = "team">{{ team[0].team_number }} - {{ team[0].team_name }}</div>
+                <div class="team">
+                    {{ team[0].team_number }} - {{ team[0].team_name }}
+                    <span class="glyphicon glyphicon-remove-circle close-icon" ng-click="logoutTeam(team[0].team_number)"></span>
+                </div>
                 <span class="label" ng-class-even="'label-primary'" ng-class-odd="'label-info'" ng-repeat="user in team track by $index">
                     {{ user.user_name }}
                     <span class="glyphicon glyphicon-remove close-icon" ng-click="logoutUser(user.user_id)"></span>

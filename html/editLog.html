@@ -6,14 +6,17 @@
             <input class="form-control" ng-model="user_id" type="text">
             <label>Type:</label>
             <select class="form-control" ng-model="timelog_type">
-                <option value="IN">IN</option>
-                <option value="OUT">OUT</option>
+                <option value="IN">In</option>
+                <option value="OUT">Out</option>
             </select>
             <label>Timestamp:</label>
             <input class="form-control" ng-model="timelog_timestamp" type="datetime">
         </div>
         <div class="form-group">
-            <button class="btn btn-primary btn-block" type="submit">Submit</button>
+            <button class="btn btn-primary btn-block" type="submit">Save Changes</button>
         </div>
     </form>
+    <div class="form-group">
+        <button class="btn btn-danger" ng-click="deleteLog()">Delete Timelog</button>
+    </div>
 </div>

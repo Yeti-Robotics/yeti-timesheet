@@ -716,6 +716,43 @@ app.controller("ProfileController", function ($scope, $rootScope, $location, $ro
     $scope.timeStart = currentYear + "-01-01";
     $scope.timeEnd = currentYear + "-12-31";
 
+    // Hour chart
+    function hourChart(data) {
+        console.log(data);
+        $('#hour-chart-container').highcharts({
+            title: {
+                text: 'Hours this month'
+            },
+            yAxis: {
+                title: {
+                    text: 'Hours'
+                },
+                plotLines: [{
+                    value: 0,
+                    width: 1,
+                    color: '#808080'
+                }]
+            },
+            tooltip: {
+                valueSuffix: ' hours'
+            },
+            legend: {
+                layout: 'vertical',
+                align: 'right',
+                verticalAlign: 'middle',
+                borderWidth: 0
+            },
+            series: [{
+                name: 'User',
+                data: data
+            }]
+        });
+    }
+    
+    function countDayFrom(startDay, endDay) {
+        return Math.floor((endDay - startDay) / 86400000);
+    }
+
     $scope.loadUser = function () {
         userService.getCurrentUser(localStorage.SESSION_KEY).then(function (data) {
             $scope.userData = data.user;
@@ -724,8 +761,12 @@ app.controller("ProfileController", function ($scope, $rootScope, $location, $ro
             userService.getHours($scope.userId, localStorage.SESSION_KEY).then(function (data) {
                 console.log(data);
                 hourChartData = [];
+                var startDate = new Date() - 2592000000;
+                for (i = 0; i < 30; i += 1) {
+                    hourChartData.push(0);
+                }
                 for (i = 0; i < data.timelog.length; i += 1) {
-                    hourChartData.push(parseFloat(data.timelog[i].hours) || 0);
+                    hourChartData[countDayFrom(startDate, new Date(data.timelog[i].date))] = (parseFloat(data.timelog[i].hours) || 0);
                 }
                 hourChart(hourChartData);
             }, function (data) {
@@ -764,41 +805,6 @@ app.controller("ProfileController", function ($scope, $rootScope, $location, $ro
         $scope.loadUserTime();
     } else {
         $scope.loadUser();
-    }
-
-
-
-    // Hour chart
-    function hourChart(data) {
-        console.log(data);
-        $('#hour-chart-container').highcharts({
-            title: {
-                text: 'Hours this month'
-            },
-            yAxis: {
-                title: {
-                    text: 'Hours'
-                },
-                plotLines: [{
-                    value: 0,
-                    width: 1,
-                    color: '#808080'
-                }]
-            },
-            tooltip: {
-                valueSuffix: ' hours'
-            },
-            legend: {
-                layout: 'vertical',
-                align: 'right',
-                verticalAlign: 'middle',
-                borderWidth: 0
-            },
-            series: [{
-                name: 'User',
-                data: data
-            }]
-        });
     }
 });
 

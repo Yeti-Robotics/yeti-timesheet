@@ -1,0 +1,22 @@
+<div class="container-fluid">
+    <div ng-controller="ProfileController">
+        <h2>{{ teamData.team_number }} - {{ teamData.team_name }}</h2>
+        <h3>Time</h3>
+        <div class="row form-group">
+            <form ng-submit="loadUserTime()">
+                <div class="col-xs-4">
+                    <label>From:</label>
+                    <input class="form-control" ng-model="timeStart" type="datetime"/>
+                </div>
+                <div class="col-xs-4">
+                    <label>To:</label>
+                    <input class="form-control" ng-model="timeEnd" type="datetime"/>
+                </div>
+                <div class="col-xs-4">
+                    <label> </label>
+                    <button class="btn btn-block btn-primary" type="submit">Submit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

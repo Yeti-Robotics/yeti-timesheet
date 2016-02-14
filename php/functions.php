@@ -142,7 +142,8 @@ function getUserTime($db, $userId, $timeStart, $timeEnd, $sessionKey) {
                 FROM timelog
                 WHERE user_id = ?
                 AND timelog_timein > ?
-                AND timelog_timeout < ?";
+                AND (timelog_timeout < ?
+                OR timelog_timeout IS NULL)";
     $result = executeSelect($db, $query, "sss", $userId, $timeStart, $timeEnd);
     if ($result) {
         while ($row = $result->fetch_assoc()) {
@@ -150,6 +151,49 @@ function getUserTime($db, $userId, $timeStart, $timeEnd, $sessionKey) {
         }
     }
     return false;
+}
+
+function getHours($db, $userId, $sessionKey) {
+    $query = "SELECT DATE(timelog_timein) as date,
+                (SUM(UNIX_TIMESTAMP(IFNULL(timelog_timeout, NOW()))) - SUM(UNIX_TIMESTAMP(timelog_timein)))
+                / 3600 as hours
+                FROM timelog
+                WHERE user_id = ? AND timelog_timein > DATE_SUB(NOW(), INTERVAL 30 DAY)
+                GROUP BY date
+                ORDER BY date ASC";
+    $result = executeSelect($db, $query, "s", $userId);
+    if ($result) {
+        $logs = [];
+        while ($row = $result->fetch_assoc()) {
+            $logs[] = $row;
+        }
+        return $logs;
+    } else {
+        return false;
+    }
+}
+
+function getHoursInRange($db, $userId, $startSeconds, $endSeconds, $sessionKey) {
+    $query = "SELECT DATE(timelog_timein) as date,
+                (SUM(UNIX_TIMESTAMP(IFNULL(timelog_timeout, NOW()))) - SUM(UNIX_TIMESTAMP(timelog_timein)))
+                / 3600 as hours
+                FROM timelog
+                WHERE user_id = ?
+                AND UNIX_TIMESTAMP(timelog_timein) > ?
+                AND (UNIX_TIMESTAMP(timelog_timeout) < ?
+                OR (timelog_timeout IS NULL AND ? > UNIX_TIMESTAMP(NOW())))
+                GROUP BY date
+                ORDER BY date ASC";
+    $result = executeSelect($db, $query, "siii", $userId, $startSeconds, $endSeconds, $endSeconds);
+    if ($result) {
+        $logs = [];
+        while ($row = $result->fetch_assoc()) {
+            $logs[] = $row;
+        }
+        return $logs;
+    } else {
+        return false;
+    }
 }
 
 function addTimelog($db, $userId, $sessionKey) {
@@ -420,24 +464,6 @@ function login($db, $userId, $password) {
 function logout($db, $sessionKey) {
     $query = "DELETE FROM session WHERE session_key = ?";
     return executeQuery($db, $query, "s", $sessionKey);
-}
-
-function getHours($db, $user_id, $sessionKey) {
-    $query = "SELECT DATE(timelog_timein) as date, (SUM(UNIX_TIMESTAMP(IFNULL(timelog_timeout, NOW()))) - SUM(UNIX_TIMESTAMP(timelog_timein))) / 3600 as hours
-                FROM timelog
-                WHERE user_id = ? AND timelog_timein > DATE_SUB(NOW(), INTERVAL 30 DAY)
-                GROUP BY date
-                ORDER BY date ASC";
-    $result = executeSelect($db, $query, "s", $user_id);
-    if ($result) {
-        $logs = [];
-        while ($row = $result->fetch_assoc()) {
-            $logs[] = $row;
-        }
-        return $logs;
-    } else {
-        return false;
-    }
 }
 
 ?>

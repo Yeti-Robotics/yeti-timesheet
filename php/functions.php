@@ -422,4 +422,22 @@ function logout($db, $sessionKey) {
     return executeQuery($db, $query, "s", $sessionKey);
 }
 
+function getHours($db, $user_id, $sessionKey) {
+    $query = "SELECT DATE(timelog_timein) as date, (SUM(UNIX_TIMESTAMP(IFNULL(timelog_timeout, NOW()))) - SUM(UNIX_TIMESTAMP(timelog_timein))) / 3600 as hours
+                FROM timelog
+                WHERE user_id = ? AND timelog_timein > DATE_SUB(NOW(), INTERVAL 30 DAY)
+                GROUP BY date
+                ORDER BY date ASC";
+    $result = executeSelect($db, $query, "s", $user_id);
+    if ($result) {
+        $logs = [];
+        while ($row = $result->fetch_assoc()) {
+            $logs[] = $row;
+        }
+        return $logs;
+    } else {
+        return false;
+    }
+}
+
 ?>

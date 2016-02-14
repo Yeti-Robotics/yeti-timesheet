@@ -10,7 +10,7 @@ app = angular.module('app', ['ngRoute']);
 
 app.run(function ($http, $rootScope, $location, loginService) {
     "use strict";
-    
+
     if (localStorage.getItem("SESSION_KEY")) {
         loginService.validateSession(localStorage.getItem("SESSION_KEY")).then(function (data) {
             if (!data.user_id) {
@@ -30,7 +30,7 @@ app.run(function ($http, $rootScope, $location, loginService) {
 
 app.service("loginService", function ($http, $q) {
     'use strict';
-    
+
     this.login = function (userId, password) {
         var config, deferred;
         config = {
@@ -52,7 +52,7 @@ app.service("loginService", function ($http, $q) {
         });
         return deferred.promise;
     };
-    
+
     this.validateSession = function (sessionKey) {
         var config, deferred;
         config = {
@@ -75,7 +75,7 @@ app.service("loginService", function ($http, $q) {
 
 app.service("logoutService", function ($http, $q) {
     'use strict';
-    
+
     this.logout = function (sessionKey) {
         var config, deferred;
         config = {
@@ -98,7 +98,7 @@ app.service("logoutService", function ($http, $q) {
 
 app.service("timesheetService", function ($http, $q) {
     'use strict';
-    
+
     this.addLog = function (userId, sessionKey) {
         var config, deferred;
         config = {
@@ -120,7 +120,7 @@ app.service("timesheetService", function ($http, $q) {
         });
         return deferred.promise;
     };
-    
+
     this.teamLog = function (teamNumber, sessionKey) {
         var config, deferred;
         config = {
@@ -142,7 +142,7 @@ app.service("timesheetService", function ($http, $q) {
         });
         return deferred.promise;
     };
-    
+
     this.getTimelog = function (timelogId, sessionKey) {
         var config, deferred;
         config = {
@@ -164,7 +164,7 @@ app.service("timesheetService", function ($http, $q) {
         });
         return deferred.promise;
     };
-    
+
     this.getLogs = function (filters, sessionKey) {
         var config, deferred;
         config = {
@@ -184,7 +184,7 @@ app.service("timesheetService", function ($http, $q) {
         });
         return deferred.promise;
     };
-    
+
     this.getLoggedInUsers = function (sessionKey) {
         var config, deferred;
         config = {
@@ -203,7 +203,7 @@ app.service("timesheetService", function ($http, $q) {
         });
         return deferred.promise;
     };
-    
+
     this.updateTimelog = function (timelogId, timein, timeout, sessionKey) {
         var config, deferred;
         config = {
@@ -227,7 +227,7 @@ app.service("timesheetService", function ($http, $q) {
         });
         return deferred.promise;
     };
-    
+
     this.deleteTimelog = function (timelogId, sessionKey) {
         var config, deferred;
         config = {
@@ -253,7 +253,7 @@ app.service("timesheetService", function ($http, $q) {
 
 app.service("teamService", function ($http, $q) {
     'use strict';
-    
+
     this.addTeam = function (teamName, teamNumber, sessionKey) {
         var config, deferred;
         config = {
@@ -276,7 +276,7 @@ app.service("teamService", function ($http, $q) {
         });
         return deferred.promise;
     };
-    
+
     this.getTeams = function (sessionKey) {
         var config, deferred;
         config = {
@@ -299,7 +299,7 @@ app.service("teamService", function ($http, $q) {
 
 app.service("userService", function ($http, $q) {
     'use strict';
-    
+
     this.addUser = function (userData, sessionKey) {
         var config, deferred;
         config = {
@@ -319,7 +319,7 @@ app.service("userService", function ($http, $q) {
         });
         return deferred.promise;
     };
-    
+
     this.getUsers = function (teamNumber, sessionKey) {
         var config, deferred;
         config = {
@@ -341,7 +341,7 @@ app.service("userService", function ($http, $q) {
         });
         return deferred.promise;
     };
-    
+
     this.getUser = function (userId, sessionKey) {
         var config, deferred;
         config = {
@@ -363,7 +363,7 @@ app.service("userService", function ($http, $q) {
         });
         return deferred.promise;
     };
-    
+
     this.getCurrentUser = function (sessionKey) {
         var config, deferred;
         config = {
@@ -382,7 +382,7 @@ app.service("userService", function ($http, $q) {
         });
         return deferred.promise;
     };
-    
+
     this.getUserTime = function (userId, timeStart, timeEnd, sessionKey) {
         var config, deferred;
         config = {
@@ -406,7 +406,7 @@ app.service("userService", function ($http, $q) {
         });
         return deferred.promise;
     };
-    
+
     this.idTaken = function (userId, sessionKey) {
         var config, deferred;
         config = {
@@ -428,11 +428,32 @@ app.service("userService", function ($http, $q) {
         });
         return deferred.promise;
     };
+
+    this.getHours = function (userId, sessionKey) {
+        var config, deferred;
+        config = {
+            method: "GET",
+            url: location.pathname + "php/getHours.php",
+            headers: {
+                "SESSION_KEY": sessionKey
+            },
+            params: {
+                user_id: userId
+            }
+        };
+        deferred = $q.defer();
+        $http(config).success(function (data) {
+            deferred.resolve(data);
+        }).error(function (data) {
+            deferred.reject(data);
+        });
+        return deferred.promise;
+    };
 });
 
 app.controller("LoginController", function ($scope, $http, $location, $rootScope, loginService) {
     "use strict";
-    
+
     $scope.login = function () {
         if (!localStorage.getItem("SESSION_KEY")) {
             loginService.login($scope.user, $scope.user_password).then(function (data) {
@@ -447,7 +468,7 @@ app.controller("LoginController", function ($scope, $http, $location, $rootScope
             });
         }
     };
-    
+
     if (localStorage.SESSION_KEY !== undefined) {
         $location.path("/home");
     }
@@ -455,7 +476,7 @@ app.controller("LoginController", function ($scope, $http, $location, $rootScope
 
 app.controller("LogoutController", function ($scope, $http, $location, $rootScope, logoutService) {
     "use strict";
-    
+
     if (localStorage.getItem("SESSION_KEY")) {
         logoutService.logout(localStorage.getItem("SESSION_KEY")).then(function (data) {
             localStorage.SESSION_KEY = undefined;
@@ -475,9 +496,9 @@ app.controller("LogoutController", function ($scope, $http, $location, $rootScop
 
 app.controller("TimesheetController", function ($scope, $http, timesheetService) {
     "use strict";
-    
+
     $scope.lastLogged = "";
-    
+
     $scope.submit = function () {
         timesheetService.addLog($scope.user_id, localStorage.getItem("SESSION_KEY")).then(function (data) {
             $scope.lastLogged = $scope.user_id;
@@ -490,15 +511,17 @@ app.controller("TimesheetController", function ($scope, $http, timesheetService)
 
 app.controller("AdminController", function ($scope, $http, $location, timesheetService) {
     "use strict";
-    
+
     $scope.getLogs = function () {
-        timesheetService.getLogs({"time_limit": "day"}, localStorage.getItem("SESSION_KEY")).then(function (data) {
+        timesheetService.getLogs({
+            "time_limit": "day"
+        }, localStorage.getItem("SESSION_KEY")).then(function (data) {
             $scope.logsListed = data.timelogs;
         }, function (data) {
             console.log(data);
         });
     };
-    
+
     $scope.getLoggedInUsers = function () {
         var loggedInUsers, i, team, user, index;
         timesheetService.getLoggedInUsers(localStorage.getItem("SESSION_KEY")).then(function (data) {
@@ -519,7 +542,7 @@ app.controller("AdminController", function ($scope, $http, $location, timesheetS
             console.log(data);
         });
     };
-    
+
     $scope.submit = function () {
         timesheetService.addLog($scope.user_id, localStorage.getItem("SESSION_KEY")).then(function (data) {
             displayMessage('Timelog successful.', 'success');
@@ -531,7 +554,7 @@ app.controller("AdminController", function ($scope, $http, $location, timesheetS
             $scope.user_id = "";
         });
     };
-    
+
     $scope.getTime = function (unixTime) {
         if (typeof (unixTime) !== "number") {
             return "";
@@ -539,24 +562,24 @@ app.controller("AdminController", function ($scope, $http, $location, timesheetS
         unixTime *= 1000;
         return new Date(unixTime).toLocaleTimeString();
     };
-    
+
     $scope.logoutUser = function (userId) {
         $scope.user_id = userId;
         $scope.submit();
     };
-    
+
     $scope.logoutTeam = function (teamNumber) {
         $location.path("/team_timesheet");
         $location.search("number", teamNumber);
     };
-    
+
     $scope.getLogs();
     $scope.getLoggedInUsers();
 });
 
 app.controller("TeamOutController", function ($scope, $http, $location, timesheetService) {
     "use strict";
-        
+
     $scope.submit = function () {
         timesheetService.teamLog($scope.team_number, localStorage.getItem("SESSION_KEY")).then(function (data) {
             $scope.lastLogged = $scope.team_number;
@@ -566,7 +589,7 @@ app.controller("TeamOutController", function ($scope, $http, $location, timeshee
             console.log(data);
         });
     };
-    
+
     if ($location.search().number) {
         $scope.team_number = $location.search().number;
     }
@@ -574,7 +597,7 @@ app.controller("TeamOutController", function ($scope, $http, $location, timeshee
 
 app.controller("ViewLogsController", function ($scope, $http, $location, timesheetService) {
     "use strict";
-    
+
     var searchData, i, filterNames;
     $scope.filters = {};
     $scope.logsListed = [];
@@ -582,7 +605,7 @@ app.controller("ViewLogsController", function ($scope, $http, $location, timeshe
     $scope.prevPageExists = false;
     $scope.nextPageExists = false;
     filterNames = ["user_name", "user_id", "team_name", "team_number"];
-    
+
     $scope.submit = function () {
         var i;
         $location.$$search = {};
@@ -592,7 +615,7 @@ app.controller("ViewLogsController", function ($scope, $http, $location, timeshe
             }
         }
     };
-    
+
     $scope.getTime = function (unixTime) {
         if (typeof (unixTime) !== "number") {
             return "";
@@ -600,20 +623,20 @@ app.controller("ViewLogsController", function ($scope, $http, $location, timeshe
         unixTime *= 1000;
         return new Date(unixTime).toLocaleTimeString();
     };
-    
+
     $scope.getDate = function (unixTime) {
         unixTime *= 1000;
         return new Date(unixTime).toLocaleDateString();
     };
-    
+
     $scope.goToPage = function (pageNumber) {
         $location.search("page", pageNumber);
     };
-    
+
     $scope.movePage = function (displacement) {
         $scope.goToPage(parseInt($location.search().page, 0) + displacement);
     };
-    
+
     searchData = $location.search();
     for (i = 0; i < filterNames.length; i += 1) {
         if (searchData[filterNames[i]]) {
@@ -645,7 +668,7 @@ app.controller("ViewLogsController", function ($scope, $http, $location, timeshe
 
 app.controller("AddTeamController", function ($scope, $rootScope, $location, teamService) {
     "use strict";
-    
+
     $scope.submit = function () {
         teamService.addTeam($scope.team_name, $scope.team_number, localStorage.getItem("SESSION_KEY")).then(function (data) {
             displayMessage("Team added successfully.", "success");
@@ -658,7 +681,7 @@ app.controller("AddTeamController", function ($scope, $rootScope, $location, tea
 
 app.controller("ViewTeamsController", function ($scope, $rootScope, $location, userService, teamService) {
     "use strict";
-    
+
     $scope.teamsListed = [];
     $scope.usersListed = [];
     $scope.usersByTeam = {};
@@ -668,7 +691,7 @@ app.controller("ViewTeamsController", function ($scope, $rootScope, $location, u
     }, function (data) {
         console.log(data);
     });
-    
+
     $scope.members = function (teamNumber) {
         if ($scope.usersByTeam[teamNumber]) {
             $scope.usersListed = $scope.usersByTeam[teamNumber];
@@ -686,23 +709,33 @@ app.controller("ViewTeamsController", function ($scope, $rootScope, $location, u
 
 app.controller("ProfileController", function ($scope, $rootScope, $location, $routeParams, userService) {
     "use strict";
-    
-    var currentYear;
+
+    var currentYear, hourChartData, i;
     $scope.userTime = {};
     currentYear = new Date().getFullYear();
     $scope.timeStart = currentYear + "-01-01";
     $scope.timeEnd = currentYear + "-12-31";
-    
+
     $scope.loadUser = function () {
         userService.getCurrentUser(localStorage.SESSION_KEY).then(function (data) {
             $scope.userData = data.user;
             $scope.userId = data.user.user_id;
             $scope.loadUserTime();
+            userService.getHours($scope.userId, localStorage.SESSION_KEY).then(function (data) {
+                console.log(data);
+                hourChartData = [];
+                for (i = 0; i < data.timelog.length; i += 1) {
+                    hourChartData.push(parseFloat(data.timelog[i].hours) || 0);
+                }
+                hourChart(hourChartData);
+            }, function (data) {
+                console.log(data);
+            });
         }, function (data) {
             console.log(data);
         });
     };
-    
+
     $scope.loadUserById = function (userId) {
         userService.getUser($scope.userId, localStorage.SESSION_KEY).then(function (data) {
             $scope.userData = data.user;
@@ -710,7 +743,7 @@ app.controller("ProfileController", function ($scope, $rootScope, $location, $ro
             console.log(data);
         });
     };
-    
+
     $scope.loadUserTime = function () {
         userService.getUserTime($scope.userId, $scope.timeStart, $scope.timeEnd, localStorage.SESSION_KEY).then(function (data) {
             var totalTime = parseInt(data.time, 0);
@@ -724,7 +757,7 @@ app.controller("ProfileController", function ($scope, $rootScope, $location, $ro
             console.log(data);
         });
     };
-    
+
     $scope.userId = $routeParams.userId;
     if ($scope.userId) {
         $scope.loadUserById($scope.userId);
@@ -732,15 +765,50 @@ app.controller("ProfileController", function ($scope, $rootScope, $location, $ro
     } else {
         $scope.loadUser();
     }
+
+
+
+    // Hour chart
+    function hourChart(data) {
+        console.log(data);
+        $('#hour-chart-container').highcharts({
+            title: {
+                text: 'Hours this month'
+            },
+            yAxis: {
+                title: {
+                    text: 'Hours'
+                },
+                plotLines: [{
+                    value: 0,
+                    width: 1,
+                    color: '#808080'
+                }]
+            },
+            tooltip: {
+                valueSuffix: ' hours'
+            },
+            legend: {
+                layout: 'vertical',
+                align: 'right',
+                verticalAlign: 'middle',
+                borderWidth: 0
+            },
+            series: [{
+                name: 'User',
+                data: data
+            }]
+        });
+    }
 });
 
 app.controller("AddUserController", function ($scope, $rootScope, $location, userService) {
     "use strict";
-    
+
     $scope.formData = {};
     $scope.passMatch = true;
     $scope.idsTaken = [];
-    
+
     $scope.submit = function () {
         userService.addUser($scope.formData, localStorage.getItem("SESSION_KEY")).then(function (data) {
             displayMessage("User added successfully.", "success");
@@ -749,15 +817,15 @@ app.controller("AddUserController", function ($scope, $rootScope, $location, use
             console.log(data);
         });
     };
-    
+
     $scope.doPassesMatch = function () {
         $scope.passMatch = ($scope.formData.user_password === $scope.formData.user_password_confirm);
     };
-    
+
     $scope.isNumTaken = function () {
         $scope.idTaken = $scope.idsTaken.includes($scope.formData.team_number + "-" + $scope.formData.user_number);
     };
-    
+
     userService.getUsers(null, localStorage.SESSION_KEY).then(function (data) {
         var i;
         for (i = 0; i < data.users.length; i += 1) {
@@ -770,9 +838,9 @@ app.controller("AddUserController", function ($scope, $rootScope, $location, use
 
 app.controller("EditLogController", function ($scope, $rootScope, $location, $routeParams, timesheetService) {
     "use strict";
-    
+
     var timelogId;
-    
+
     $scope.submit = function () {
         timesheetService.updateTimelog(timelogId, $scope.timelog_timein, $scope.timelog_timeout, localStorage.SESSION_KEY).then(function (data) {
             displayMessage("Timelog updated sucessfully.", "success");
@@ -781,7 +849,7 @@ app.controller("EditLogController", function ($scope, $rootScope, $location, $ro
             console.log(data);
         });
     };
-    
+
     $scope.deleteLog = function () {
         timesheetService.deleteTimelog(timelogId, localStorage.SESSION_KEY).then(function (data) {
             displayMessage("Timelog deleted.", "success");
@@ -790,7 +858,7 @@ app.controller("EditLogController", function ($scope, $rootScope, $location, $ro
             console.log(data);
         });
     };
-    
+
     timelogId = $routeParams.timelogId;
     if (timelogId) {
         timesheetService.getTimelog(timelogId, localStorage.SESSION_KEY).then(function (data) {

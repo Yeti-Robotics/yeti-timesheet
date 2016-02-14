@@ -84,6 +84,49 @@ function getTeams($db, $sessionKey) {
     }
 }
 
+function getTeam($db, $teamNumber, $sessionKey) {
+    if (!isAdmin($db, $sessionKey)) {
+        return false;
+    }
+    $query = "SELECT * FROM team WHERE team_number = ?";
+    $result = executeSelect($db, $query, "i", $teamNumber);
+    if ($result) {
+        while ($row = $result->fetch_assoc()) {
+            return $row;
+        }
+    }
+    return false;
+}
+
+function getTeamTimes($db, $teamNumber, $timeStart, $timeEnd, $sessionKey) {
+    if (!isAdmin($db, $sessionKey)) {
+        return false;
+    }
+    $query = "SELECT user.user_id, user.user_name,
+                IFNULL(SUM(UNIX_TIMESTAMP(IFNULL(timelog_timeout, NOW())) - UNIX_TIMESTAMP(timelog_timein)),0)
+                AS user_time
+                FROM user
+                LEFT JOIN timelog
+                ON user.user_id = timelog.user_id
+                WHERE team_number = ?
+                AND (timelog_timein > ?
+                OR timelog_timein IS NULL)
+                AND (timelog_timeout < ?
+                OR (timelog_timeout IS NULL
+                AND (timelog_timein < ?
+                OR timelog_timein IS NULL)))
+                GROUP BY user_id";
+    $result = executeSelect($db, $query, "isss", $teamNumber, $timeStart, $timeEnd, $timeEnd);
+    if ($result) {
+        $times = [];
+        while ($row = $result->fetch_assoc()) {
+            $times[] = $row;
+        }
+        return $times;
+    }
+    return false;
+}
+
 function addUser($db, $userNumber, $userName, $teamNumber, $userEmail, $userPassword, $userAdmin, $userMentor, $sessionKey) {
     if (!isAdmin($db, $sessionKey)) {
         return false;
@@ -143,8 +186,9 @@ function getUserTime($db, $userId, $timeStart, $timeEnd, $sessionKey) {
                 WHERE user_id = ?
                 AND timelog_timein > ?
                 AND (timelog_timeout < ?
-                OR timelog_timeout IS NULL)";
-    $result = executeSelect($db, $query, "sss", $userId, $timeStart, $timeEnd);
+                OR (timelog_timeout IS NULL
+                AND timelog_timein < ?))";
+    $result = executeSelect($db, $query, "ssss", $userId, $timeStart, $timeEnd, $timeEnd);
     if ($result) {
         while ($row = $result->fetch_assoc()) {
             return $row;

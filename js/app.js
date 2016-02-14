@@ -4,6 +4,11 @@ function displayMessage(message, alertType) {
     "use strict";
     $('.message-container').html(message).removeClass('alert-success alert-info alert-warning alert-danger').addClass('alert-' + alertType).stop(true).slideDown(500).delay(3000).slideUp(500);
 }
+    
+function countDayFrom(startDay, endDay) {
+    'use strict';
+    return Math.floor((endDay - startDay) / 86400000);
+}
 
 var app;
 app = angular.module('app', ['ngRoute']);
@@ -285,6 +290,51 @@ app.service("teamService", function ($http, $q) {
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded",
                 "SESSION_KEY": sessionKey
+            }
+        };
+        deferred = $q.defer();
+        $http(config).success(function (data) {
+            deferred.resolve(data);
+        }).error(function (data) {
+            deferred.reject(data);
+        });
+        return deferred.promise;
+    };
+
+    this.getTeam = function (teamNumber, sessionKey) {
+        var config, deferred;
+        config = {
+            method: "GET",
+            url: location.pathname + "php/getTeam.php",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "SESSION_KEY": sessionKey
+            },
+            params: {
+                team_number: teamNumber
+            }
+        };
+        deferred = $q.defer();
+        $http(config).success(function (data) {
+            deferred.resolve(data);
+        }).error(function (data) {
+            deferred.reject(data);
+        });
+        return deferred.promise;
+    };
+
+    this.getTeamTimes = function (teamNumber, startSeconds, endSeconds, sessionKey) {
+        var config, deferred;
+        config = {
+            method: "GET",
+            url: location.pathname + "php/getTeamTimes.php",
+            headers: {
+                "SESSION_KEY": sessionKey
+            },
+            params: {
+                team_number: teamNumber,
+                time_start: startSeconds,
+                time_end: endSeconds
             }
         };
         deferred = $q.defer();
@@ -772,10 +822,6 @@ app.controller("ProfileController", function ($scope, $rootScope, $location, $ro
         });
     }
     
-    function countDayFrom(startDay, endDay) {
-        return Math.floor((endDay - startDay) / 86400000);
-    }
-    
     function loadHourChart() {
         if ($scope.userId && countDayFrom(new Date($scope.timeStart), new Date($scope.timeEnd)) <= 366) {
             userService.getHoursInRange($scope.userId, $scope.timeStart, $scope.timeEnd, localStorage.SESSION_KEY).then(function (data) {
@@ -915,6 +961,91 @@ app.controller("EditLogController", function ($scope, $rootScope, $location, $ro
     }
 });
 
+app.controller("TeamPageController", function ($scope, $rootScope, $routeParams, teamService) {
+    'use strict';
+
+    var currentDate, prevDate, afterDate, hourChartData, i;
+    currentDate = new Date();
+    prevDate = new Date(currentDate - 2592000000);
+    afterDate = new Date(currentDate - (-86400000));
+    $scope.timeStart = prevDate.getFullYear() + "-" + (prevDate.getMonth() + 1) + "-" + prevDate.getDate();
+    $scope.timeEnd = afterDate.getFullYear() + "-" + (afterDate.getMonth() + 1) + "-" + afterDate.getDate();
+
+    // Hour chart
+    function hourChart(data) {
+        $('#hour-chart-container').highcharts({
+            chart: {
+                type: 'column'
+            },
+            title: {
+                text: 'Hours Per Member'
+            },
+            xAxis: {
+                type: 'category'
+            },
+            yAxis: {
+                min: 0,
+                title: {
+                    text: 'Hours'
+                }
+            },
+            legend: {
+                enabled: false
+            },
+            tooltip: {
+                valueSuffix: ' hours'
+            },
+            plotOptions: {
+                column: {
+                    pointPadding: 0,
+                    borderWidth: 0
+                },
+                series: {
+                    dataLabels: {
+                        enabled: true,
+                        format: "{point.y:.0f}"
+                    }
+                }
+            },
+            series: [{
+                name: 'Time',
+                colorByPoint: true,
+                data: data
+            }]
+        });
+    }
+    
+    function loadHourChart() {
+        if ($scope.teamNumber && countDayFrom(new Date($scope.timeStart), new Date($scope.timeEnd)) <= 366) {
+            teamService.getTeamTimes($scope.teamNumber, $scope.timeStart, $scope.timeEnd, localStorage.SESSION_KEY).then(function (data) {
+                var hourChartData;
+                hourChartData = [];
+                for (i = 0; i < data.times.length; i += 1) {
+                    hourChartData.push({
+                        name: data.times[i].user_name,
+                        y: Math.round(data.times[i].user_time / 36) / 100
+                    });
+                }
+                hourChart(hourChartData);
+            }, function (data) {
+                console.log(data);
+            });
+        }
+    }
+    
+    function loadTeam() {
+        teamService.getTeam($scope.teamNumber, localStorage.SESSION_KEY).then(function (data) {
+            $scope.teamData = data.team;
+            loadHourChart();
+        }, function (data) {
+            console.log(data);
+        });
+    }
+    
+    $scope.teamNumber = $routeParams.teamNumber;
+    loadTeam();
+});
+
 app.config(['$routeProvider', function ($routeProvider, $locationProvider) {
     'use strict';
 
@@ -946,6 +1077,8 @@ app.config(['$routeProvider', function ($routeProvider, $locationProvider) {
         templateUrl: 'html/profile.html'
     }).when('/edit_log/:timelogId', {
         templateUrl: 'html/editLog.html'
+    }).when('/team/:teamNumber', {
+        templateUrl: 'html/teamPage.html'
     }).otherwise({
         redirectTo: '/'
     });

@@ -318,6 +318,16 @@ function getTimelogs($db, $filters, $sessionKey) {
     if ($filters["time_limit"] != null) {
         $query .= " AND timelog_timein > DATE_SUB(CURRENT_TIMESTAMP, INTERVAL 1 DAY)";
     }
+    if ($filters["time_start"] != null) {
+        $query .= " AND timelog_timein > ?";
+        $paramsToBind[] = $filters["time_start"];
+        $paramBindTypes .= "s";
+    }
+    if ($filters["time_end"] != null) {
+        $query .= " AND timelog_timeout < ?";
+        $paramsToBind[] = $filters["time_end"];
+        $paramBindTypes .= "s";
+    }
     $query .= " ORDER BY timelog_timein DESC, timelog_id DESC";
     $filter = $filters["num_limit"];
     if ($filter != null && is_numeric($filter)) {

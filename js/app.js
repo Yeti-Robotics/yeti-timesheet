@@ -676,7 +676,7 @@ app.controller("ViewLogsController", function ($scope, $http, $location, timeshe
     $scope.pageSize = 20;
     $scope.prevPageExists = false;
     $scope.nextPageExists = false;
-    filterNames = ["user_name", "user_id", "team_name", "team_number"];
+    filterNames = ["user_name", "user_id", "team_name", "team_number", "time_start", "time_end"];
 
     $scope.submit = function () {
         var i;
@@ -712,7 +712,7 @@ app.controller("ViewLogsController", function ($scope, $http, $location, timeshe
     searchData = $location.search();
     for (i = 0; i < filterNames.length; i += 1) {
         if (searchData[filterNames[i]]) {
-            if (i < 3) {
+            if (i !== 3) {
                 $scope[filterNames[i]] = searchData[filterNames[i]];
             } else {
                 $scope[filterNames[i]] = parseInt(searchData[filterNames[i]], 0);
@@ -736,6 +736,7 @@ app.controller("ViewLogsController", function ($scope, $http, $location, timeshe
         console.log(data);
         $scope.lastLogged = "";
     });
+    console.log(searchData);
 });
 
 app.controller("AddTeamController", function ($scope, $rootScope, $location, teamService) {

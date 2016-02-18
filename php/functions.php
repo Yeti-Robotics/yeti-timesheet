@@ -375,9 +375,9 @@ function updateTimelog($db, $timelogId, $timelogIn, $timelogOut, $sessionKey) {
         return false;
     }
     $query = "UPDATE timelog SET
-                timelog_timein = ?, timelog_timeout = ?
+                timelog_timein = ?, timelog_timeout = (CASE ? WHEN '' THEN NULL ELSE ? END)
                 WHERE timelog.timelog_id = ?";
-    return executeQuery($db, $query, "ssi", $timelogIn, $timelogOut, $timelogId);
+    return executeQuery($db, $query, "sssi", $timelogIn, $timelogOut, $timelogOut, $timelogId);
 }
 
 function deleteTimelog($db, $timelogId, $sessionKey) {

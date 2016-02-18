@@ -642,15 +642,14 @@ app.controller("AdminController", function ($scope, $http, $location, timesheetS
     };
 
     $scope.logoutTeam = function (teamNumber) {
-        $location.path("/team_timesheet");
-        $location.search("number", teamNumber);
+        $location.path("/team_timesheet/" + teamNumber);
     };
 
     $scope.getLogs();
     $scope.getLoggedInUsers();
 });
 
-app.controller("TeamOutController", function ($scope, $http, $location, timesheetService) {
+app.controller("TeamOutController", function ($scope, $http, $location, $routeParams, timesheetService) {
     "use strict";
 
     $scope.submit = function () {
@@ -663,8 +662,8 @@ app.controller("TeamOutController", function ($scope, $http, $location, timeshee
         });
     };
 
-    if ($location.search().number) {
-        $scope.team_number = $location.search().number;
+    if ($routeParams.teamNumber) {
+        $scope.team_number = $routeParams.teamNumber;
     }
 });
 
@@ -1062,6 +1061,9 @@ app.config(['$routeProvider', function ($routeProvider, $locationProvider) {
         templateUrl: 'html/login.html',
         controller: "LogoutController"
     }).when('/team_timesheet', {
+        templateUrl: 'html/teamOut.html',
+        controller: "TeamOutController"
+    }).when('/team_timesheet/:teamNumber', {
         templateUrl: 'html/teamOut.html',
         controller: "TeamOutController"
     }).when('/view_timelogs', {

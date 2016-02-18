@@ -1,6 +1,43 @@
 <div class="container-fluid">
     <div ng-controller="TeamPageController">
         <h2>{{ teamData.team_number }} {{ teamData.team_name }}</h2>
+        <h3>Members</h3>
+        <table class="table">
+            <thead>
+                <th>Name</th>
+                <th>User ID</th>
+                <th></th>
+            </thead>
+            <tbody>
+                <tr ng-repeat="user in members track by $index">
+                    <td>{{ user.user_name }}</td>
+                    <td>{{ user.user_id }}</td>
+                    <td ng-if="user_admin"><a ng-href="#/profile/{{ user['user_id'] }}">Profile</a></td>
+                </tr>
+                <tr>
+                    <td><a href="#/add_user">Add Member</a></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+            </tbody>
+        </table>
+        <h3>Time</h3>
+        <div class="row form-group">
+            <form ng-submit="loadHourChart()">
+                <div class="col-xs-4">
+                    <label>From:</label>
+                    <input class="form-control" ng-model="timeStart" type="datetime"/>
+                </div>
+                <div class="col-xs-4">
+                    <label>To:</label>
+                    <input class="form-control" ng-model="timeEnd" type="datetime"/>
+                </div>
+                <div class="col-xs-4">
+                    <label> </label>
+                    <button class="btn btn-block btn-primary" type="submit">Submit</button>
+                </div>
+            </form>
+        </div>
     </div>
     <div id="hour-chart-container" style="margin-top: 10px; height: 400px;"></div>
 </div>

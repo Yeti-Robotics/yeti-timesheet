@@ -108,15 +108,15 @@ function getTeamTimes($db, $teamNumber, $timeStart, $timeEnd, $sessionKey) {
                 FROM user
                 LEFT JOIN timelog
                 ON user.user_id = timelog.user_id
-                WHERE team_number = ?
                 AND (timelog_timein > ?
-                OR timelog_timein IS NULL)
+                    OR timelog_timein IS NULL)
                 AND (timelog_timeout < ?
-                OR (timelog_timeout IS NULL
-                AND (timelog_timein < ?
-                OR timelog_timein IS NULL)))
+                    OR (timelog_timeout IS NULL
+                        AND (timelog_timein < ?
+                            OR timelog_timein IS NULL)))
+                WHERE team_number = ?
                 GROUP BY user_id";
-    $result = executeSelect($db, $query, "isss", $teamNumber, $timeStart, $timeEnd, $timeEnd);
+    $result = executeSelect($db, $query, "sssi", $timeStart, $timeEnd, $timeEnd, $teamNumber);
     if ($result) {
         $times = [];
         while ($row = $result->fetch_assoc()) {

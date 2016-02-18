@@ -965,6 +965,8 @@ app.controller("TeamPageController", function ($scope, $rootScope, $routeParams,
     'use strict';
 
     var currentDate, prevDate, afterDate, hourChartData, i;
+    $scope.members = [];
+    $scope.buttonText = "Button";
     currentDate = new Date();
     prevDate = new Date(currentDate - 2592000000);
     afterDate = new Date(currentDate - (-86400000));
@@ -1015,32 +1017,34 @@ app.controller("TeamPageController", function ($scope, $rootScope, $routeParams,
         });
     }
     
-    function loadHourChart() {
+    function loadTeam() {
+        teamService.getTeam($scope.teamNumber, localStorage.SESSION_KEY).then(function (data) {
+            $scope.teamData = data.team;
+            $scope.loadHourChart();
+        }, function (data) {
+            console.log(data);
+        });
+    }
+    
+    $scope.loadHourChart = function () {
         if ($scope.teamNumber && countDayFrom(new Date($scope.timeStart), new Date($scope.timeEnd)) <= 366) {
             teamService.getTeamTimes($scope.teamNumber, $scope.timeStart, $scope.timeEnd, localStorage.SESSION_KEY).then(function (data) {
                 var hourChartData;
                 hourChartData = [];
+                $scope.members = [];
                 for (i = 0; i < data.times.length; i += 1) {
                     hourChartData.push({
                         name: data.times[i].user_name,
                         y: Math.round(data.times[i].user_time / 36) / 100
                     });
+                    $scope.members.push(data.times[i]);
                 }
                 hourChart(hourChartData);
             }, function (data) {
                 console.log(data);
             });
         }
-    }
-    
-    function loadTeam() {
-        teamService.getTeam($scope.teamNumber, localStorage.SESSION_KEY).then(function (data) {
-            $scope.teamData = data.team;
-            loadHourChart();
-        }, function (data) {
-            console.log(data);
-        });
-    }
+    };
     
     $scope.teamNumber = $routeParams.teamNumber;
     loadTeam();

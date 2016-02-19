@@ -644,6 +644,16 @@ app.controller("AdminController", function ($scope, $http, $location, timesheetS
     $scope.logoutTeam = function (teamNumber) {
         $location.path("/team_timesheet/" + teamNumber);
     };
+    
+    $scope.getLogData = function (timelogId) {
+        timesheetService.getTimelog(timelogId, localStorage.SESSION_KEY).then(function (data) {
+            $scope.timelog_id = timelogId;
+            $scope.timelog_timein = data.timelog.timelog_timein;
+            $scope.timelog_timeout = data.timelog.timelog_timeout;
+        }, function (data) {
+            console.log(data);
+        });
+    };
 
     $scope.getLogs();
     $scope.getLoggedInUsers();
@@ -708,35 +718,48 @@ app.controller("ViewLogsController", function ($scope, $http, $location, timeshe
     $scope.movePage = function (displacement) {
         $scope.goToPage(parseInt($location.search().page, 0) + displacement);
     };
-
-    searchData = $location.search();
-    for (i = 0; i < filterNames.length; i += 1) {
-        if (searchData[filterNames[i]]) {
-            if (i !== 3) {
-                $scope[filterNames[i]] = searchData[filterNames[i]];
-            } else {
-                $scope[filterNames[i]] = parseInt(searchData[filterNames[i]], 0);
+    
+    $scope.getLogData = function (timelogId) {
+        timesheetService.getTimelog(timelogId, localStorage.SESSION_KEY).then(function (data) {
+            $scope.timelog_id = timelogId;
+            $scope.timelog_timein = data.timelog.timelog_timein;
+            $scope.timelog_timeout = data.timelog.timelog_timeout;
+        }, function (data) {
+            console.log(data);
+        });
+    };
+    
+    $scope.getLogs = function () {
+        searchData = $location.search();
+        for (i = 0; i < filterNames.length; i += 1) {
+            if (searchData[filterNames[i]]) {
+                if (i !== 3) {
+                    $scope[filterNames[i]] = searchData[filterNames[i]];
+                } else {
+                    $scope[filterNames[i]] = parseInt(searchData[filterNames[i]], 0);
+                }
+                $scope.filters[filterNames[i]] = searchData[filterNames[i]];
             }
-            $scope.filters[filterNames[i]] = searchData[filterNames[i]];
         }
-    }
-    if (searchData.page) {
-        $scope.filters.num_low = (searchData.page - 1) * $scope.pageSize;
-        $scope.filters.num_limit = $scope.pageSize;
-        if (searchData.page > 1) {
-            $scope.prevPageExists = true;
+        if (searchData.page) {
+            $scope.filters.num_low = (searchData.page - 1) * $scope.pageSize;
+            $scope.filters.num_limit = $scope.pageSize;
+            if (searchData.page > 1) {
+                $scope.prevPageExists = true;
+            }
         }
-    }
-    timesheetService.getLogs($scope.filters, localStorage.SESSION_KEY).then(function (data) {
-        $scope.logsListed = data.timelogs;
-        if ($scope.logsListed.length === $scope.pageSize && searchData.page) {
-            $scope.nextPageExists = true;
-        }
-    }, function (data) {
-        console.log(data);
-        $scope.lastLogged = "";
-    });
-    console.log(searchData);
+        timesheetService.getLogs($scope.filters, localStorage.SESSION_KEY).then(function (data) {
+            $scope.logsListed = data.timelogs;
+            if ($scope.logsListed.length === $scope.pageSize && searchData.page) {
+                $scope.nextPageExists = true;
+            }
+        }, function (data) {
+            console.log(data);
+            $scope.lastLogged = "";
+        });
+    };
+    
+    $scope.getLogs();
 });
 
 app.controller("AddTeamController", function ($scope, $rootScope, $location, teamService) {
@@ -927,24 +950,25 @@ app.controller("AddUserController", function ($scope, $rootScope, $location, use
     });
 });
 
-app.controller("EditLogController", function ($scope, $rootScope, $location, $routeParams, timesheetService) {
+app.controller("EditLogController", function ($scope, $rootScope, $window, $routeParams, timesheetService) {
     "use strict";
 
     var timelogId;
 
-    $scope.submit = function () {
-        timesheetService.updateTimelog(timelogId, $scope.timelog_timein, $scope.timelog_timeout, localStorage.SESSION_KEY).then(function (data) {
+    $scope.saveChanges = function () {
+        timesheetService.updateTimelog($scope.timelog_id, $scope.timelog_timein, $scope.timelog_timeout,
+                                       localStorage.SESSION_KEY).then(function (data) {
             displayMessage("Timelog updated sucessfully.", "success");
-            $location.path("/view_timelogs");
+            $scope.getLogs();
         }, function (data) {
             console.log(data);
         });
     };
 
     $scope.deleteLog = function () {
-        timesheetService.deleteTimelog(timelogId, localStorage.SESSION_KEY).then(function (data) {
+        timesheetService.deleteTimelog($scope.timelog_id, localStorage.SESSION_KEY).then(function (data) {
             displayMessage("Timelog deleted.", "success");
-            $location.path("/view_timelogs");
+            $scope.getLogs();
         }, function (data) {
             console.log(data);
         });
@@ -953,6 +977,7 @@ app.controller("EditLogController", function ($scope, $rootScope, $location, $ro
     timelogId = $routeParams.timelogId;
     if (timelogId) {
         timesheetService.getTimelog(timelogId, localStorage.SESSION_KEY).then(function (data) {
+            $scope.timelog_id = timelogId;
             $scope.timelog_timein = data.timelog.timelog_timein;
             $scope.timelog_timeout = data.timelog.timelog_timeout;
         }, function (data) {
@@ -1082,8 +1107,6 @@ app.config(['$routeProvider', function ($routeProvider, $locationProvider) {
         templateUrl: 'html/profile.html'
     }).when('/profile/:userId', {
         templateUrl: 'html/profile.html'
-    }).when('/edit_log/:timelogId', {
-        templateUrl: 'html/editLog.html'
     }).when('/team/:teamNumber', {
         templateUrl: 'html/teamPage.html'
     }).otherwise({

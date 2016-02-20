@@ -859,7 +859,7 @@ app.controller("ViewTeamsController", function ($scope, $rootScope, $location, u
     
     var days, startDate, endDate;
     
-    days = 30;
+    days = 7;
     $scope.teamsListed = [];
     $scope.usersListed = [];
     $scope.usersByTeam = {};
@@ -915,10 +915,8 @@ app.controller("ViewTeamsController", function ($scope, $rootScope, $location, u
             startDate = new Date($scope.startDate);
             endDate = new Date($scope.endDate);
             dates = [];
-            for (i = 0; startDate < endDate; i += 1) {
-                if (i > 0) {
-                    startDate = new Date(startDate.getTime() + (1000 * 60 * 60 * 24));
-                }
+            for (i = 0; startDate <= endDate; i += 1) {
+                startDate = new Date(startDate.getTime() + (1000 * 60 * 60 * 24));
                 for (j = 0; j < series.length; j += 1) {
                     if (teams[series[j].name].hasOwnProperty(getDateString(startDate))) {
                         series[j].data[i] = teams[series[j].name][getDateString(startDate)].hours;

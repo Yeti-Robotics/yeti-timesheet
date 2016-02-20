@@ -9,7 +9,7 @@ $response = [];
 
 if (isset($_GET["user_id"]) && isset($_GET["time_start"]) && isset($_GET["time_end"])) {
     $result = getHoursInRange($db, $_GET["user_id"], $_GET["time_start"], $_GET["time_end"], getSessionKey());
-    if ($result) {
+    if (is_array($result)) {
         $response["timelog"] = $result;
     } else {
         http_response_code(500);

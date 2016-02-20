@@ -127,6 +127,34 @@ function getTeamTimes($db, $teamNumber, $timeStart, $timeEnd, $sessionKey) {
     return false;
 }
 
+function getTeamsAndUsers($db, $sessionKey) {
+    if (!getUserID($db, $sessionKey)) {
+        return false;
+    }
+    $query = "SELECT user_id, user_name, user.team_number, team_name
+                FROM user JOIN team ON user.team_number = team.team_number";
+    $result = executeSelect($db, $query);
+    if ($result) {
+        $teams = [];
+        while ($row = $result->fetch_assoc()) {
+            $teamNumber = $row['team_number'];
+            if (!isset($teams[$teamNumber])) {
+                $teams[$teamNumber] = array(
+                    "team_name" => $row["team_name"],
+                    "members" => []
+                );
+            }
+            $teams[$teamNumber]["members"][] = array(
+                "user_id" => $row["user_id"],
+                "user_name" => $row["user_name"]
+            );
+        }
+        return $teams;
+    } else {
+        return false;
+    }
+}
+
 function addUser($db, $userNumber, $userName, $teamNumber, $userEmail, $userPassword, $userAdmin, $userMentor, $sessionKey) {
     if (!isAdmin($db, $sessionKey)) {
         return false;

@@ -21,12 +21,12 @@
             <div class="section-title">Currently Logged In</div>
             <div class = "team-container" ng-repeat="team in loggedInUsers track by $index">
                 <div class="team">
-                    {{ team[0].team_number }} - {{ team[0].team_name }}
-                    <span class="glyphicon glyphicon-remove-circle close-icon" ng-click="logoutTeam(team[0].team_number)"></span>
+                    <a ng-href="#/team/{{ team[0].team_number }}">{{ team[0].team_number }} - {{ team[0].team_name }}</a>
+                    <span class="glyphicon glyphicon-remove-circle close-icon" ng-click="logoutTeam(team[0].team_number)" title="Log out all members of {{team[0].team_name}}"></span>
                 </div>
                 <span class="label" ng-class-even="'label-primary'" ng-class-odd="'label-info'" ng-repeat="user in team track by $index">
-                    {{ user.user_name }}
-                    <span class="glyphicon glyphicon-remove close-icon" ng-click="logoutUser(user.user_id)"></span>
+                    <a ng-href="#/profile/{{ user.user_id }}">{{ user.user_name }}</a>
+                    <span class="glyphicon glyphicon-remove close-icon" ng-click="logoutUser(user.user_id)" title="Log out {{user.user_name}}"></span>
                 </span>
             </div>
         </div>
@@ -43,7 +43,7 @@
             <tbody>
                 <tr ng-repeat="log in logsListed track by $index">
                     <td>{{ log["user_id"] }}</td>
-                    <td>{{ log["user_name"] }}</td>
+                    <td><a ng-href="#/profile/{{ log.user_id }}">{{ log["user_name"] }}</a></td>
                     <td>{{ getTime(log["timelog_timein"]) }}</td>
                     <td>{{ getTime(log["timelog_timeout"]) }}</td>
                     <td><button class="btn btn-xs" type="button" data-toggle="modal" data-target="#editModal" ng-click="getLogData(log['timelog_id'])">Edit</button></td>

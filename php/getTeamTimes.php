@@ -9,7 +9,7 @@ $response = [];
 
 if (isset($_GET["team_number"]) && isset($_GET["time_start"]) && isset($_GET["time_end"])) {
     $result = getTeamTimes($db, $_GET["team_number"], $_GET["time_start"], $_GET["time_end"], getSessionKey());
-    if ($result) {
+    if (is_array($result)) {
         $response["times"] = $result;
     } else {
         http_response_code(500);

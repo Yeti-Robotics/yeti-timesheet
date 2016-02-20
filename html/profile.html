@@ -4,7 +4,7 @@
         <h4>
             <span ng-if="userData.user_mentor">Mentor,</span>
             <span ng-if="!userData.user_mentor">Student,</span>
-            Team {{ userData.team_number }} {{ userData.team_name }}
+            <a ng-href="#/team/{{ userData.team_number }}">Team {{ userData.team_number }} {{ userData.team_name }}</a>
         </h4>
         <label>E-Mail Address:</label> {{ userData.user_email }}
         <h3>Time</h3>

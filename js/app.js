@@ -1303,20 +1303,28 @@ app.controller("CreateLogController", function ($scope, $rootScope, timesheetSer
     
     $scope.updateFields = function () {
         $scope.user_id = this.user_id;
-        $scope.timelog_timein = this.timelog_timein;
-        $scope.timelog_timeout = this.timelog_timeout;
+        $scope.timelog_timein = $("#create-log-timein").val();
+        $scope.timelog_timeout = $("#create-log-timeout").val();
     };
     
     $scope.clearFields = function () {
         this.team_number = "";
         $scope.loadTeamMembers();
         this.user_id = "";
-        this.timelog_timein = "";
-        this.timelog_timeout = "";
+        $scope.timelog_timein = "";
+        $scope.timelog_timeout = "";
         $scope.updateFields();
     };
     
     $scope.loadTeams();
+    
+    $("#createModal").on("show.bs.modal", function () {
+        $scope.clearFields();
+        $("#create-log-timein, #create-log-timeout").datetimepicker({
+            format: "YYYY-MM-DD HH:mm"
+        });
+        $("#create-log-timein, #create-log-timeout").on("dp.change", $scope.updateFields);
+    });
 });
 
 app.config(['$routeProvider', function ($routeProvider, $locationProvider) {

@@ -115,7 +115,8 @@ function getTeamTimes($db, $teamNumber, $timeStart, $timeEnd, $sessionKey) {
                         AND (timelog_timein < ?
                             OR timelog_timein IS NULL)))
                 WHERE team_number = ?
-                GROUP BY user_id";
+                GROUP BY user_id
+                ORDER BY user_name ASC";
     $result = executeSelect($db, $query, "sssi", $timeStart, $timeEnd, $timeEnd, $teamNumber);
     if ($result) {
         $times = [];

@@ -762,7 +762,7 @@ app.controller("ViewLogsController", function ($scope, $http, $location, timeshe
     var searchData, i, filterNames;
     $scope.filters = {};
     $scope.logsListed = [];
-    $scope.pageSize = 20;
+    $scope.pageSize = 50;
     $scope.prevPageExists = false;
     $scope.nextPageExists = false;
     filterNames = ["user_name", "user_id", "team_name", "team_number", "time_start", "time_end"];
@@ -788,6 +788,10 @@ app.controller("ViewLogsController", function ($scope, $http, $location, timeshe
     $scope.getDate = function (unixTime) {
         unixTime *= 1000;
         return new Date(unixTime).toLocaleDateString();
+    };
+    
+    $scope.getHourDifference = function (timeStart, timeEnd) {
+        return Math.round((timeEnd - timeStart) / 360) / 10;
     };
 
     $scope.goToPage = function (pageNumber) {
@@ -828,9 +832,14 @@ app.controller("ViewLogsController", function ($scope, $http, $location, timeshe
             }
         }
         timesheetService.getLogs($scope.filters, localStorage.SESSION_KEY).then(function (data) {
+            var log, i;
             $scope.logsListed = data.timelogs;
             if ($scope.logsListed.length === $scope.pageSize && searchData.page) {
                 $scope.nextPageExists = true;
+            }
+            for (i = 0; i < $scope.logsListed.length; i += 1) {
+                log = $scope.logsListed[i];
+                log.hours = $scope.getHourDifference(log.timelog_timein, log.timelog_timeout);
             }
         }, function (data) {
             console.log(data);
@@ -930,7 +939,8 @@ app.controller("ViewTeamsController", function ($scope, $rootScope, $location, u
             hourChart(series, dates);
         }, function (data) {
             console.log(data);
-        });    };
+        });
+    };
 
     $scope.members = function (teamNumber) {
         if ($scope.usersByTeam[teamNumber]) {

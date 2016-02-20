@@ -37,6 +37,7 @@
                 <th>Date</th>
                 <th>Time In</th>
                 <th>Time Out</th>
+                <th>Hours</th>
                 <th></th>
             </thead>
             <tbody>
@@ -46,6 +47,7 @@
                     <td>{{ getDate(log["timelog_timein"]) }}</td>
                     <td>{{ getTime(log["timelog_timein"]) }}</td>
                     <td>{{ getTime(log["timelog_timeout"]) }}</td>
+                    <td>{{ log.hours }}</td>
                     <td><button class="btn btn-xs" type="button" data-toggle="modal" data-target="#editModal" ng-click="getLogData(log['timelog_id'])">Edit</button></td>
                 </tr>
             </tbody>

@@ -10,6 +10,21 @@ function countDayFrom(startDay, endDay) {
     return Math.floor((endDay - startDay) / 86400000);
 }
 
+function getDateString(date) {
+    "use strict";
+    
+    var month, day;
+    month = date.getMonth() + 1;
+    if (month < 10) {
+        month = "0" + month;
+    }
+    day = date.getDate();
+    if (day < 10) {
+        day = "0" + day;
+    }
+    return date.getFullYear() + "-" + month + "-" + day;
+}
+
 var app;
 app = angular.module('app', ['ngRoute']);
 
@@ -377,6 +392,28 @@ app.service("teamService", function ($http, $q) {
             url: location.pathname + "php/getTeamsAndUsers.php",
             headers: {
                 "SESSION_KEY": sessionKey
+            }
+        };
+        deferred = $q.defer();
+        $http(config).success(function (data) {
+            deferred.resolve(data);
+        }).error(function (data) {
+            deferred.reject(data);
+        });
+        return deferred.promise;
+    };
+    
+    this.getHoursByTeam = function (startDate, endDate, sessionKey) {
+        var config, deferred;
+        config = {
+            method: "GET",
+            url: location.pathname + "php/getHoursByTeam.php",
+            headers: {
+                "SESSION_KEY": sessionKey
+            },
+            params: {
+                time_start: startDate,
+                time_end: endDate
             }
         };
         deferred = $q.defer();
@@ -819,16 +856,84 @@ app.controller("AddTeamController", function ($scope, $rootScope, $location, tea
 
 app.controller("ViewTeamsController", function ($scope, $rootScope, $location, userService, teamService) {
     "use strict";
-
+    
+    var days, startDate, endDate;
+    
+    days = 30;
     $scope.teamsListed = [];
     $scope.usersListed = [];
     $scope.usersByTeam = {};
-
-    teamService.getTeams(localStorage.SESSION_KEY).then(function (data) {
-        $scope.teamsListed = data.teams;
-    }, function (data) {
-        console.log(data);
-    });
+    $scope.startDate = getDateString(new Date(new Date().getTime() - (1000 * 60 * 60 * 24 * days)));
+    $scope.endDate = getDateString(new Date());
+    
+    // Hour chart
+    function hourChart(data, categories) {
+        $('#team-hour-chart-container').highcharts({
+            title: {
+                text: 'Team Hours'
+            },
+            xAxis: {
+                categories: categories
+            },
+            yAxis: {
+                title: {
+                    text: 'Hours'
+                },
+                plotLines: [{
+                    value: 0,
+                    width: 1,
+                    color: '#808080'
+                }]
+            },
+            tooltip: {
+                valueSuffix: ' hours'
+            },
+            series: data
+        });
+    }
+    
+    $scope.getHoursByTeam = function () {
+        teamService.getHoursByTeam($scope.startDate, $scope.endDate, localStorage.SESSION_KEY).then(function (data) {
+            var teams, dates, i, j, currentTeam, item, series;
+            teams = [];
+            series = [];
+            for (i = 0; i < data.hours.length; i += 1) {
+                item = data.hours[i];
+                if (currentTeam !== item.team_number) {
+                    teams[item.team_number] = [];
+                    currentTeam = item.team_number;
+                    series.push({
+                        name: item.team_number,
+                        data: []
+                    });
+                }
+                teams[item.team_number][item.date] = {
+                    hours: parseFloat(item.hours)
+                };
+            }
+            console.log(teams);
+            startDate = new Date($scope.startDate);
+            endDate = new Date($scope.endDate);
+            dates = [];
+            for (i = 0; startDate < endDate; i += 1) {
+                if (i > 0) {
+                    startDate = new Date(startDate.getTime() + (1000 * 60 * 60 * 24));
+                }
+                for (j = 0; j < series.length; j += 1) {
+                    if (teams[series[j].name].hasOwnProperty(getDateString(startDate))) {
+                        series[j].data[i] = teams[series[j].name][getDateString(startDate)].hours;
+                    } else {
+                        series[j].data[i] = 0;
+                    }
+                }
+                dates.push(startDate.toLocaleDateString());
+            }
+            console.log(series);
+            hourChart(series, dates);
+        }, function (data) {
+            console.log(data);
+        });
+    };
 
     $scope.members = function (teamNumber) {
         if ($scope.usersByTeam[teamNumber]) {
@@ -843,6 +948,14 @@ app.controller("ViewTeamsController", function ($scope, $rootScope, $location, u
             });
         }
     };
+
+    teamService.getTeams(localStorage.SESSION_KEY).then(function (data) {
+        $scope.teamsListed = data.teams;
+    }, function (data) {
+        console.log(data);
+    });
+
+    $scope.getHoursByTeam();
 });
 
 app.controller("ProfileController", function ($scope, $rootScope, $location, $routeParams, userService) {

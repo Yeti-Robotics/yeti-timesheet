@@ -930,8 +930,7 @@ app.controller("ViewTeamsController", function ($scope, $rootScope, $location, u
             hourChart(series, dates);
         }, function (data) {
             console.log(data);
-        });
-    };
+        });    };
 
     $scope.members = function (teamNumber) {
         if ($scope.usersByTeam[teamNumber]) {
@@ -1168,7 +1167,8 @@ app.controller("TeamPageController", function ($scope, $rootScope, $routeParams,
     function hourChart(data) {
         $('#hour-chart-container').highcharts({
             chart: {
-                type: 'column'
+                type: 'bar',
+                height: data.length * 25
             },
             title: {
                 text: 'Hours Per Member'

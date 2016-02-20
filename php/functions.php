@@ -275,6 +275,29 @@ function getHoursInRange($db, $userId, $startSeconds, $endSeconds, $sessionKey) 
     }
 }
 
+function getHoursByTeam($db, $startDate, $endDate, $sessionKey) {
+    if (!isAdmin($db, $sessionKey)) {
+        return false;
+    }
+    $query = "SELECT DATE(timelog_timein) as date, team_number,
+                (SUM(UNIX_TIMESTAMP(IFNULL(timelog_timeout, NOW()))) - SUM(UNIX_TIMESTAMP(timelog_timein))) / 3600 as hours
+                FROM timelog
+                JOIN user ON user.user_id = timelog.user_id
+                WHERE DATE(timelog_timein) >= ? AND DATE(timelog_timein) <= ?
+                GROUP BY date, team_number
+                ORDER BY (CASE team_number WHEN 3506 THEN 0 ELSE team_number END) ASC, date ASC";
+    $result = executeSelect($db, $query, "ss", $startDate, $endDate);
+    if ($result) {
+        $rows = [];
+        while ($row = $result->fetch_assoc()) {
+            $rows[] = $row;
+        }
+        return $rows;
+    } else {
+        return false;
+    }
+}
+
 function addTimelog($db, $userId, $sessionKey) {
     if (!isAdmin($db, $sessionKey)) {
         return false;

@@ -19,24 +19,5 @@
             </tr>
         </tbody>
     </table>
-    <h3 ng-if="usersListed[0]">Members of Team {{ teamNumber }}</h3>
-    <table class="table" ng-if="usersListed[0]">
-        <thead>
-            <th>Name</th>
-            <th>User ID</th>
-            <th></th>
-        </thead>
-        <tbody>
-            <tr ng-repeat="user in usersListed track by $index">
-                <td>{{ user["user_name"] }}</td>
-                <td>{{ user["user_id"] }}</td>
-                <td ng-if="user_admin"><a ng-href="#/profile/{{ user['user_id'] }}">Profile</a></td>
-            </tr>
-            <tr>
-                <td><a href="#/add_user">Add Member</a></td>
-                <td></td>
-                <td></td>
-            </tr>
-        </tbody>
-    </table>
+    <div id="team-hour-chart-container" style="height: 400px; margin-top: 10px;"></div>
 </div>

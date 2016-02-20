@@ -198,6 +198,9 @@ function getUserTime($db, $userId, $timeStart, $timeEnd, $sessionKey) {
 }
 
 function getHours($db, $userId, $sessionKey) {
+    if (!isAdmin($db, $sessionKey) && getUserID($db, $sessionKey) != $userId) {
+        return false;
+    }
     $query = "SELECT DATE(timelog_timein) as date,
                 (SUM(UNIX_TIMESTAMP(IFNULL(timelog_timeout, NOW()))) - SUM(UNIX_TIMESTAMP(timelog_timein)))
                 / 3600 as hours
@@ -218,6 +221,9 @@ function getHours($db, $userId, $sessionKey) {
 }
 
 function getHoursInRange($db, $userId, $startSeconds, $endSeconds, $sessionKey) {
+    if (!isAdmin($db, $sessionKey) && getUserID($db, $sessionKey) != $userId) {
+        return false;
+    }
     $query = "SELECT DATE(timelog_timein) as date,
                 (SUM(UNIX_TIMESTAMP(IFNULL(timelog_timeout, NOW()))) - SUM(UNIX_TIMESTAMP(timelog_timein)))
                 / 3600 as hours
@@ -225,7 +231,7 @@ function getHoursInRange($db, $userId, $startSeconds, $endSeconds, $sessionKey) 
                 WHERE user_id = ?
                 AND UNIX_TIMESTAMP(timelog_timein) > ?
                 AND (UNIX_TIMESTAMP(timelog_timeout) < ?
-                OR (timelog_timeout IS NULL AND ? > UNIX_TIMESTAMP(NOW())))
+                    OR (timelog_timeout IS NULL AND ? > UNIX_TIMESTAMP(NOW())))
                 GROUP BY date
                 ORDER BY date ASC";
     $result = executeSelect($db, $query, "siii", $userId, $startSeconds, $endSeconds, $endSeconds);
@@ -324,7 +330,12 @@ function getTimelogs($db, $filters, $sessionKey) {
         $paramBindTypes .= "s";
     }
     if ($filters["time_end"] != null) {
-        $query .= " AND timelog_timeout < ?";
+        $query .= " AND IFNULL(timelog_timeout, timelog_timein)";
+        if (strlen($filters["time_end"]) < 12) {
+            $query .= " < DATE_ADD(?, INTERVAL 1 DAY)";
+        } else {
+            $query .= " < ?";
+        }
         $paramsToBind[] = $filters["time_end"];
         $paramBindTypes .= "s";
     }

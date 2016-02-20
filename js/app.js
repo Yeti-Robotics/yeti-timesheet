@@ -847,7 +847,16 @@ app.controller("ProfileController", function ($scope, $rootScope, $location, $ro
     
     function loadHourChart() {
         if ($scope.userId && countDayFrom(new Date($scope.timeStart), new Date($scope.timeEnd)) <= 366) {
-            userService.getHoursInRange($scope.userId, $scope.timeStart, $scope.timeEnd, localStorage.SESSION_KEY).then(function (data) {
+            var timeStart, timeEnd;
+            timeStart = new Date($scope.timeStart);
+            timeStart /= 1000;
+            timeEnd = $scope.timeEnd;
+            if (timeEnd.length < 12) {
+                timeEnd += " 23:59:59";
+            }
+            timeEnd = new Date(timeEnd);
+            timeEnd /= 1000;
+            userService.getHoursInRange($scope.userId, timeStart, timeEnd, localStorage.SESSION_KEY).then(function (data) {
                 var startSeconds, endSeconds, dateDist, hourChartDates, thisDate;
                 hourChartData = [];
                 hourChartDates = [];
@@ -878,7 +887,6 @@ app.controller("ProfileController", function ($scope, $rootScope, $location, $ro
             $scope.userData = data.user;
             $scope.userId = data.user.user_id;
             $scope.loadUserTime();
-            
         }, function (data) {
             console.log(data);
         });
@@ -989,14 +997,13 @@ app.controller("EditLogController", function ($scope, $rootScope, $window, $rout
 app.controller("TeamPageController", function ($scope, $rootScope, $routeParams, teamService) {
     'use strict';
 
-    var currentDate, prevDate, afterDate, hourChartData, i;
+    var currentDate, prevDate, hourChartData, i;
     $scope.members = [];
     $scope.buttonText = "Button";
     currentDate = new Date();
     prevDate = new Date(currentDate - 2592000000);
-    afterDate = new Date(currentDate - (-86400000));
     $scope.timeStart = prevDate.getFullYear() + "-" + (prevDate.getMonth() + 1) + "-" + prevDate.getDate();
-    $scope.timeEnd = afterDate.getFullYear() + "-" + (afterDate.getMonth() + 1) + "-" + afterDate.getDate();
+    $scope.timeEnd = currentDate.getFullYear() + "-" + (currentDate.getMonth() + 1) + "-" + currentDate.getDate();
 
     // Hour chart
     function hourChart(data) {
@@ -1053,7 +1060,11 @@ app.controller("TeamPageController", function ($scope, $rootScope, $routeParams,
     
     $scope.loadHourChart = function () {
         if ($scope.teamNumber && countDayFrom(new Date($scope.timeStart), new Date($scope.timeEnd)) <= 366) {
-            teamService.getTeamTimes($scope.teamNumber, $scope.timeStart, $scope.timeEnd, localStorage.SESSION_KEY).then(function (data) {
+            var timeEnd = $scope.timeEnd;
+            if (timeEnd.length < 12) {
+                timeEnd += " 23:59:59";
+            }
+            teamService.getTeamTimes($scope.teamNumber, $scope.timeStart, timeEnd, localStorage.SESSION_KEY).then(function (data) {
                 var hourChartData;
                 hourChartData = [];
                 $scope.members = [];

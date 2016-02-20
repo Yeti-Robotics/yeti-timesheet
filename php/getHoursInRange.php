@@ -8,7 +8,7 @@ header("Content-Type: application/json");
 $response = [];
 
 if (isset($_GET["user_id"]) && isset($_GET["time_start"]) && isset($_GET["time_end"])) {
-    $result = getHours($db, $_GET["user_id"], $_GET["time_start"], $_GET["time_end"], getSessionKey());
+    $result = getHoursInRange($db, $_GET["user_id"], $_GET["time_start"], $_GET["time_end"], getSessionKey());
     if ($result) {
         $response["timelog"] = $result;
     } else {

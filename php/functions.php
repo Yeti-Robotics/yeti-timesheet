@@ -132,7 +132,9 @@ function getTeamsAndUsers($db, $sessionKey) {
         return false;
     }
     $query = "SELECT user_id, user_name, user.team_number, team_name
-                FROM user JOIN team ON user.team_number = team.team_number";
+                FROM user JOIN team ON user.team_number = team.team_number
+               	ORDER BY (CASE user.team_number WHEN 3506 THEN 0 ELSE user.team_number END) ASC,
+                user_id ASC";
     $result = executeSelect($db, $query);
     if ($result) {
         $teams = [];
@@ -144,8 +146,7 @@ function getTeamsAndUsers($db, $sessionKey) {
                     "members" => []
                 );
             }
-            $teams[$teamNumber]["members"][] = array(
-                "user_id" => $row["user_id"],
+            $teams[$teamNumber]["members"][$row['user_id']] = array(
                 "user_name" => $row["user_name"]
             );
         }
@@ -296,6 +297,15 @@ function addTimelog($db, $userId, $sessionKey) {
         }
     }
     return false;
+}
+
+function writeTimelog($db, $userId, $timelogIn, $timelogOut, $sessionKey) {
+    if (!isAdmin($db, $sessionKey)) {
+        return false;
+    }
+    $query = "INSERT INTO timelog (user_id, timelog_timein, timelog_timeout)
+				VALUES (?, ?, (CASE ? WHEN '' THEN NULL ELSE ? END))";
+    return executeQuery($db, $query, "ssss", $userId, $timelogIn, $timelogOut, $timelogOut);
 }
 
 function getTimelog($db, $timelogId) {

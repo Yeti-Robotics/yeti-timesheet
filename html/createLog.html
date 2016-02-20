@@ -8,19 +8,20 @@
             <form id="add_user_form">
                 <div class="form-group">
                     <label>Team:</label>
-                    <select class="form-control" ng-model="team_number">
+                    <select class="form-control" ng-model="team_number" ng-change="loadTeamMembers()">
                         <option></option>
+                        <option ng-repeat="(team_number, team) in teams" value="{{team_number}}">{{team_number}} {{team.team_name}}</option>
                     </select>
                     <label>User:</label>
-                    <select class="form-control" ng-model="user_id">
-                        <option></option>
+                    <select class="form-control" ng-model="user_id" ng-change="updateFields()">
+                        <option ng-repeat="(user_id, user) in teamUsers" value="{{user_id}}">{{user_id.split("-")[1]}} {{user.user_name}}</option>
                     </select>
                 </div>
                 <div class="form-group">
                     <label>Time In:</label>
-                    <input class="form-control" ng-model="timelog_timein" type="text" placeholder="yyyy-mm-dd hh:mm" required>
+                    <input class="form-control" ng-model="timelog_timein" type="text" placeholder="yyyy-mm-dd hh:mm" ng-change="updateFields()" required>
                     <label>Time Out:</label>
-                    <input class="form-control" ng-model="timelog_timeout" type="text" placeholder="yyyy-mm-dd hh:mm">
+                    <input class="form-control" ng-model="timelog_timeout" type="text" placeholder="yyyy-mm-dd hh:mm" ng-change="updateFields()">
                 </div>
                 <div class="form-group">
                     <button class="btn btn-primary btn-block" data-dismiss="modal" ng-click="createTimelog()">Create</button>

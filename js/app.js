@@ -254,6 +254,30 @@ app.service("timesheetService", function ($http, $q) {
         });
         return deferred.promise;
     };
+    
+    this.writeTimelog = function (userId, timein, timeout, sessionKey) {
+        var config, deferred;
+        config = {
+            method: "POST",
+            url: location.pathname + "php/writeTimelog.php",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "SESSION_KEY": sessionKey
+            },
+            data: $.param({
+                user_id: userId,
+                timelog_timein: timein,
+                timelog_timeout: timeout
+            })
+        };
+        deferred = $q.defer();
+        $http(config).success(function (data) {
+            deferred.resolve(data);
+        }).error(function (data) {
+            deferred.reject(data);
+        });
+        return deferred.promise;
+    };
 });
 
 app.service("teamService", function ($http, $q) {
@@ -335,6 +359,24 @@ app.service("teamService", function ($http, $q) {
                 team_number: teamNumber,
                 time_start: startSeconds,
                 time_end: endSeconds
+            }
+        };
+        deferred = $q.defer();
+        $http(config).success(function (data) {
+            deferred.resolve(data);
+        }).error(function (data) {
+            deferred.reject(data);
+        });
+        return deferred.promise;
+    };
+    
+    this.getTeamsAndUsers = function (sessionKey) {
+        var config, deferred;
+        config = {
+            method: "GET",
+            url: location.pathname + "php/getTeamsAndUsers.php",
+            headers: {
+                "SESSION_KEY": sessionKey
             }
         };
         deferred = $q.defer();
@@ -968,6 +1010,9 @@ app.controller("EditLogController", function ($scope, $rootScope, $window, $rout
                                        localStorage.SESSION_KEY).then(function (data) {
             displayMessage("Timelog updated sucessfully.", "success");
             $scope.getLogs();
+            if ($scope.getLoggedInUsers) {
+                $scope.getLoggedInUsers();
+            }
         }, function (data) {
             console.log(data);
         });
@@ -977,6 +1022,9 @@ app.controller("EditLogController", function ($scope, $rootScope, $window, $rout
         timesheetService.deleteTimelog($scope.timelog_id, localStorage.SESSION_KEY).then(function (data) {
             displayMessage("Timelog deleted.", "success");
             $scope.getLogs();
+            if ($scope.getLoggedInUsers) {
+                $scope.getLoggedInUsers();
+            }
         }, function (data) {
             console.log(data);
         });
@@ -1084,6 +1132,70 @@ app.controller("TeamPageController", function ($scope, $rootScope, $routeParams,
     
     $scope.teamNumber = $routeParams.teamNumber;
     loadTeam();
+});
+
+app.controller("CreateLogController", function ($scope, $rootScope, timesheetService, teamService) {
+    "use strict";
+
+    var timelogId;
+    
+    $scope.teams = {};
+    $scope.teamUsers = {};
+
+    $scope.createTimelog = function () {
+        timesheetService.writeTimelog($scope.user_id, $scope.timelog_timein, $scope.timelog_timeout,
+                                 localStorage.SESSION_KEY).then(function (data) {
+            displayMessage('Timelog created.', 'success');
+            $scope.clearFields();
+            if ($scope.getLogs) {
+                $scope.getLogs();
+            }
+            if ($scope.getLoggedInUsers) {
+                $scope.getLoggedInUsers();
+            }
+        }, function (data) {
+            displayMessage('Error creating timelog.', 'success');
+            console.log(data);
+        });
+    };
+    
+    $scope.loadTeams = function () {
+        teamService.getTeamsAndUsers(localStorage.SESSION_KEY).then(function (data) {
+            $scope.teams = data.teams;
+        }, function (data) {
+            console.log(data);
+        });
+    };
+    
+    $scope.loadTeamMembers = function () {
+        if ($scope.team_number !== this.team_number) {
+            $scope.team_number = this.team_number;
+            if ($scope.team_number) {
+                $scope.teamUsers = $scope.teams[$scope.team_number].members;
+            } else {
+                $scope.teamUsers = {};
+            }
+            this.user_id = "";
+            $scope.user_id = "";
+        }
+    };
+    
+    $scope.updateFields = function () {
+        $scope.user_id = this.user_id;
+        $scope.timelog_timein = this.timelog_timein;
+        $scope.timelog_timeout = this.timelog_timeout;
+    };
+    
+    $scope.clearFields = function () {
+        this.team_number = "";
+        $scope.loadTeamMembers();
+        this.user_id = "";
+        this.timelog_timein = "";
+        this.timelog_timeout = "";
+        $scope.updateFields();
+    };
+    
+    $scope.loadTeams();
 });
 
 app.config(['$routeProvider', function ($routeProvider, $locationProvider) {

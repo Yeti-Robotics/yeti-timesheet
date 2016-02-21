@@ -1186,6 +1186,8 @@ app.controller("EditLogController", function ($scope, $rootScope, $window, $rout
     };
     
     $("#editModal").on("show.bs.modal", function () {
+        $('#edit-log-timein').val($scope.timelog_timein);
+        $('#edit-log-timeout').val($scope.timelog_timeout);
         $("#edit-log-timein, #edit-log-timeout").datetimepicker({
             format: "YYYY-MM-DD HH:mm"
         });
@@ -1363,8 +1365,8 @@ app.controller("CreateLogController", function ($scope, $rootScope, timesheetSer
         this.team_number = "";
         $scope.loadTeamMembers();
         this.user_id = "";
-        $scope.timelog_timein = "";
-        $scope.timelog_timeout = "";
+        $('#create-log-timein').val("");
+        $('#create-log-timeout').val("");
         $scope.updateFields();
     };
     
@@ -1372,6 +1374,7 @@ app.controller("CreateLogController", function ($scope, $rootScope, timesheetSer
     
     $("#createModal").on("show.bs.modal", function () {
         $scope.clearFields();
+        this.set_timeout = true;
         $("#create-log-timein, #create-log-timeout").datetimepicker({
             format: "YYYY-MM-DD HH:mm"
         });

@@ -85,7 +85,7 @@ function getTeams($db, $sessionKey) {
 }
 
 function getTeam($db, $teamNumber, $sessionKey) {
-    if (!isAdmin($db, $sessionKey)) {
+    if (!hasTeamMentorRights($db, $teamNumber, $sessionKey)) {
         return false;
     }
     $query = "SELECT * FROM team WHERE team_number = ?";
@@ -99,7 +99,7 @@ function getTeam($db, $teamNumber, $sessionKey) {
 }
 
 function getTeamTimes($db, $teamNumber, $timeStart, $timeEnd, $sessionKey) {
-    if (!isAdmin($db, $sessionKey)) {
+    if (!hasMentorRights($db, $sessionKey)) {
         return false;
     }
     $query = "SELECT user.user_id, user.user_name,
@@ -158,7 +158,7 @@ function getTeamsAndUsers($db, $sessionKey) {
 }
 
 function addUser($db, $userNumber, $userName, $teamNumber, $userEmail, $userPassword, $userAdmin, $userMentor, $sessionKey) {
-    if (!isAdmin($db, $sessionKey)) {
+    if (!hasTeamMentorRights($db, $teamNumber, $sessionKey)) {
         return false;
     }
     $query = "INSERT INTO user (user_id, user_name, team_number, user_email, user_password, user_admin, user_mentor)
@@ -168,7 +168,7 @@ function addUser($db, $userNumber, $userName, $teamNumber, $userEmail, $userPass
 }
 
 function getUsers($db, $teamNumber, $sessionKey) {
-    if (!isAdmin($db, $sessionKey)) {
+    if (!hasMentorRights($db, $sessionKey)) {
         return false;
     }
     $query = "SELECT * FROM user";
@@ -190,7 +190,7 @@ function getUsers($db, $teamNumber, $sessionKey) {
 }
 
 function getUser($db, $userId, $sessionKey) {
-    if (!isAdmin($db, $sessionKey)) {
+    if (!hasUserRights($db, $userId, $sessionKey)) {
         return false;
     }
     $query = "SELECT user_name, user.user_id, user_email, user_mentor, user_admin, user.team_number, team.team_name
@@ -207,7 +207,7 @@ function getUser($db, $userId, $sessionKey) {
 }
 
 function getUserTime($db, $userId, $timeStart, $timeEnd, $sessionKey) {
-    if (getUserID($db, $sessionKey) != $userId && !isAdmin($db, $sessionKey)) {
+    if (!hasUserRights($db, $userId, $sessionKey)) {
         return false;
     }
     $query = "SELECT IFNULL(SUM(UNIX_TIMESTAMP(IFNULL(timelog_timeout, NOW())) - UNIX_TIMESTAMP(timelog_timein)),0)
@@ -228,7 +228,7 @@ function getUserTime($db, $userId, $timeStart, $timeEnd, $sessionKey) {
 }
 
 function getHours($db, $userId, $sessionKey) {
-    if (!isAdmin($db, $sessionKey) && getUserID($db, $sessionKey) != $userId) {
+    if (!hasUserRights($db, $userId, $sessionKey)) {
         return false;
     }
     $query = "SELECT DATE(timelog_timein) as date,
@@ -251,7 +251,7 @@ function getHours($db, $userId, $sessionKey) {
 }
 
 function getHoursInRange($db, $userId, $startSeconds, $endSeconds, $sessionKey) {
-    if (!isAdmin($db, $sessionKey) && getUserID($db, $sessionKey) != $userId) {
+    if (!hasUserMentorRights($db, $userId, $sessionKey)) {
         return false;
     }
     $query = "SELECT DATE(timelog_timein) as date,
@@ -277,7 +277,7 @@ function getHoursInRange($db, $userId, $startSeconds, $endSeconds, $sessionKey) 
 }
 
 function getHoursByTeam($db, $startDate, $endDate, $sessionKey) {
-    if (!isAdmin($db, $sessionKey)) {
+    if (!hasMentorRights($db, $sessionKey)) {
         return false;
     }
     $query = "SELECT DATE(timelog_timein) as date, team_number,
@@ -300,7 +300,7 @@ function getHoursByTeam($db, $startDate, $endDate, $sessionKey) {
 }
 
 function addTimelog($db, $userId, $sessionKey) {
-    if (!isAdmin($db, $sessionKey)) {
+    if (!hasUserMentorRights($db, $userId, $sessionKey)) {
         return false;
     }
     $query = "SELECT *
@@ -324,7 +324,7 @@ function addTimelog($db, $userId, $sessionKey) {
 }
 
 function writeTimelog($db, $userId, $timelogIn, $timelogOut, $sessionKey) {
-    if (!isAdmin($db, $sessionKey)) {
+    if (!hasUserMentorRights($db, $userId, $sessionKey)) {
         return false;
     }
     $query = "INSERT INTO timelog (user_id, timelog_timein, timelog_timeout)
@@ -345,7 +345,11 @@ function getTimelog($db, $timelogId) {
 
 function getTimelogs($db, $filters, $sessionKey) {
     if (!isAdmin($db, $sessionKey)) {
-        return false;
+        if (isMentor($db, $sessionKey)) {
+            $filters["team_number"] = getMentorTeam($db, $sessionKey);
+        } else {
+            return false;
+        }
     }
     $filterNames = ["team_name", "team_number", "user_name", "user_id"];
     $paramBindTypes = "";
@@ -429,7 +433,7 @@ function getTimelogs($db, $filters, $sessionKey) {
 }
 
 function getLastTimelogs($db, $limit, $sessionKey) {
-    if (!isAdmin($db, $sessionKey)) {
+    if (!isAdmin($db, $sessionKey) && !isMentor($db, $sessionKey)) {
         return false;
     }
     $query = "SELECT user.user_name,
@@ -454,25 +458,35 @@ function getLastTimelogs($db, $limit, $sessionKey) {
 }
 
 function updateTimelog($db, $timelogId, $timelogIn, $timelogOut, $sessionKey) {
-    if (!isAdmin($db, $sessionKey)) {
-        return false;
+    if (isAdmin($db, $sessionKey)) {
+        $query = "UPDATE timelog SET
+                    timelog_timein = ?, timelog_timeout = (CASE ? WHEN '' THEN NULL ELSE ? END)
+                    WHERE timelog.timelog_id = ?";
+        return executeQuery($db, $query, "sssi", $timelogIn, $timelogOut, $timelogOut, $timelogId);
+    } elseif (isMentor($db, $sessionKey)) {
+        $query = "UPDATE timelog SET
+                    timelog_timein = ?, timelog_timeout = (CASE ? WHEN '' THEN NULL ELSE ? END)
+                    WHERE timelog.timelog_id = ? AND user_id IN
+                    (SELECT user_id FROM user WHERE team_number = ?)";
+        return executeQuery($db, $query, "sssii", $timelogIn, $timelogOut, $timelogOut, $timelogId, getMentorTeam($db, $sessionKey));
     }
-    $query = "UPDATE timelog SET
-                timelog_timein = ?, timelog_timeout = (CASE ? WHEN '' THEN NULL ELSE ? END)
-                WHERE timelog.timelog_id = ?";
-    return executeQuery($db, $query, "sssi", $timelogIn, $timelogOut, $timelogOut, $timelogId);
+    return false;
 }
 
 function deleteTimelog($db, $timelogId, $sessionKey) {
-    if (!isAdmin($db, $sessionKey)) {
-        return false;
+    if (isAdmin($db, $sessionKey)) {
+        $query = "DELETE FROM timelog WHERE timelog_id = ?";
+        return executeQuery($db, $query, "i", $timelogId);
+    } elseif (isMentor($db, $sessionKey)) {
+        $query = "DELETE FROM timelog WHERE timelog_id = ? AND user_id IN
+                    (SELECT user_id FROM user WHERE team_number = ?)";
+        return executeQuery($db, $query, "ii", $timelogId, getMentorTeam($db, $sessionKey));
     }
-    $query = "DELETE FROM timelog WHERE timelog_id = ?";
-    return executeQuery($db, $query, "i", $timelogId);
+    return false;
 }
 
 function getLoggedInUsers($db, $sessionKey) {
-    if (!isAdmin($db, $sessionKey)) {
+    if (!hasMentorRights($db, $sessionKey)) {
         return false;
     }
     $query = "SELECT user.user_id, user_name, user.team_number, team.team_name FROM timelog
@@ -492,8 +506,10 @@ function getLoggedInUsers($db, $sessionKey) {
     }
 }
 
-function teamSignout($db, $teamNumber) {
-    // add a timelog for each team member with an odd number of timelogs
+function teamSignout($db, $teamNumber, $sessionKey) {
+    if (!hasTeamMentorRights($db, $teamNumber, $sessionKey)) {
+        return false;
+    }
     $query = "UPDATE timelog SET timelog_timeout = NOW()
                 WHERE timelog.user_id IN
                 (SELECT user_id FROM user WHERE team_number = ?)
@@ -534,6 +550,96 @@ function isAdmin($db, $sessionKey) {
     return $isAdmin;
 }
 
+function isTeamMentor($db, $teamNumber, $sessionKey) {
+    $query = "SELECT user_mentor
+                FROM session
+                LEFT JOIN user
+                ON user.user_id = session.user_id
+                WHERE session_key = ?
+                AND team_number = ?";
+    $result = executeSelect($db, $query, "si", $sessionKey, $teamNumber);
+    $isMentor = false;
+    if ($result) {
+        while ($row = $result->fetch_assoc()) {
+            if ($row["user_mentor"]) {
+                $isMentor = (boolean) $row["user_mentor"];
+            }
+        }
+    }
+    if (!$isMentor) {
+        logToFile(LOG_FILE, "User is not a mentor for team $teamNumber with session key: $sessionKey");
+    }
+    return $isMentor;
+}
+
+function isMentor($db, $sessionKey) {
+    $query = "SELECT user_mentor
+                FROM session
+                LEFT JOIN user
+                ON user.user_id = session.user_id
+                WHERE session_key = ?";
+    $result = executeSelect($db, $query, "s", $sessionKey);
+    $isMentor = false;
+    if ($result) {
+        while ($row = $result->fetch_assoc()) {
+            if ($row["user_mentor"]) {
+                $isMentor = (boolean) $row["user_mentor"];
+            }
+        }
+    }
+    if (!$isMentor) {
+        logToFile(LOG_FILE, "User is not a mentor with session key: $sessionKey");
+    }
+    return $isMentor;
+}
+
+function getMentorTeam($db, $sessionKey) {
+    $query = "SELECT team_number
+                FROM session
+                LEFT JOIN user
+                ON user.user_id = session.user_id
+                WHERE session_key = ?
+                AND user_mentor";
+    $result = executeSelect($db, $query, "s", $sessionKey);
+    if ($result) {
+        while ($row = $result->fetch_assoc()) {
+            return $row["team_number"];
+        }
+    }
+    logToFile(LOG_FILE, "User is not a mentor with session key: $sessionKey");
+    return false;
+}
+
+function isMentorToId($db, $userId, $sessionKey) {
+    $query = "SELECT (team_number IN
+                (SELECT team_number FROM user WHERE user_id = ?)) as same_team
+                FROM user WHERE user_mentor AND user_id IN
+                (SELECT user_id FROM session WHERE session_key = ?)";
+    $result = executeSelect($db, $query, "ss", $userId, $sessionKey);
+    if ($result) {
+        while ($row = $result->fetch_assoc()) {
+            return (boolean) $row["same_team"];
+        }
+    }
+    return false;
+}
+
+function hasTeamMentorRights($db, $teamNumber, $sessionKey) {
+    return isAdmin($db, $sessionKey) || isTeamMentor($db, $teamNumber, $sessionKey);
+}
+
+function hasMentorRights($db, $sessionKey) {
+    return isAdmin($db, $sessionKey) || isMentor($db, $sessionKey);
+}
+
+function hasUserMentorRights($db, $userId, $sessionKey) {
+    return isAdmin($db, $sessionKey) || isMentorToId($db, $userId, $sessionKey);
+}
+
+function hasUserRights($db, $userId, $sessionKey) {
+    return hasUserMentorRights($db, $userId, $sessionKey) || getCurrentUser($db, $sessionKey) == $userId;
+}
+
 function logToFile($fileName, $message) {
     $string = "[".date("F j, Y, g:i a")."] - ";
     $string .= $message;
@@ -565,7 +671,8 @@ function getCurrentUser($db, $sessionKey) {
 }
 
 function login($db, $userId, $password) {
-    $query = "SELECT user_admin FROM user WHERE user_id = ? AND user_password = MD5(?)";
+    $query = "SELECT user_admin, (CASE WHEN user_mentor THEN team_number ELSE 0 END) as mentor_team
+                FROM user WHERE user_id = ? AND user_password = MD5(?)";
     $result = executeSelect($db, $query, "ss", $userId, $password);
     $success = false;
     $response = [];

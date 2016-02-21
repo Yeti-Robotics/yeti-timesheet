@@ -10,6 +10,7 @@ $userId = getUserID($db, getSessionKey());
 if($userId) {
     $response['user_id'] = $userId;
     $response['user_admin'] = isAdmin($db, getSessionKey());
+    $response['mentor_team'] = getMentorTeam($db, getSessionKey());
 } else {
     http_response_code(500);
     $response["error"] = "Error validating session.";

@@ -17,18 +17,14 @@
                             <tr ng-repeat="user in members track by $index">
                                 <td>{{ user.user_name }}</td>
                                 <td>{{ user.user_id }}</td>
-                                <td ng-if="user_admin"><a ng-href="#/profile/{{ user['user_id'] }}">Profile</a></td>
-                            </tr>
-                            <tr>
-                                <td><a href="#/add_user">Add Member</a></td>
-                                <td></td>
-                                <td></td>
+                                <td><a ng-href="#/profile/{{ user['user_id'] }}">Profile</a></td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
+        <a href="#/add_user">Add Member</a>
         <h3>Time</h3>
         <div class="row form-group">
             <form ng-submit="loadHourChart()">

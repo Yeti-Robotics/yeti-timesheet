@@ -39,6 +39,7 @@ app.run(function ($http, $rootScope, $location, loginService) {
             } else {
                 $rootScope.user_logged_in = true;
                 $rootScope.user_admin = data.user_admin;
+                $rootScope.mentor_team = parseInt(data.mentor_team, 0);
             }
         }, function (data) {
             console.log(data);
@@ -612,6 +613,7 @@ app.controller("LoginController", function ($scope, $http, $location, $rootScope
                 localStorage.setItem("SESSION_KEY", data.session_key);
                 $rootScope.user_admin = Boolean(data.user_admin);
                 $rootScope.user_logged_in = true;
+                $rootScope.mentor_team = parseInt(data.mentor_team, 0);
                 displayMessage('Login successful.', 'success');
                 $location.path("/home");
             }, function (data) {
@@ -635,6 +637,7 @@ app.controller("LogoutController", function ($scope, $http, $location, $rootScop
             localStorage.removeItem("SESSION_KEY");
             $rootScope.user_admin = false;
             $rootScope.user_logged_in = false;
+            $rootScope.mentor_team = false;
             displayMessage('Logged out.', 'success');
             $location.path("/");
         }, function (data) {
@@ -1336,7 +1339,12 @@ app.controller("CreateLogController", function ($scope, $rootScope, timesheetSer
     
     $scope.loadTeams = function () {
         teamService.getTeamsAndUsers(localStorage.SESSION_KEY).then(function (data) {
-            $scope.teams = data.teams;
+            if ($rootScope.user_admin) {
+                $scope.teams = data.teams;
+            } else {
+                $scope.teams = {};
+                $scope.teams[$rootScope.mentor_team] = data.teams[$rootScope.mentor_team];
+            }
         }, function (data) {
             console.log(data);
         });

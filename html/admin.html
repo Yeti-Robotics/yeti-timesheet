@@ -22,7 +22,7 @@
             <div class = "team-container" ng-repeat="team in loggedInUsers track by $index">
                 <div class="team">
                     <a ng-href="#/team/{{ team[0].team_number }}">{{ team[0].team_number }} - {{ team[0].team_name }}</a>
-                    <span class="glyphicon glyphicon-remove-circle close-icon" ng-click="logoutTeam(team[0].team_number)" title="Log out all members of {{team[0].team_name}}"></span>
+                    <span class="glyphicon glyphicon-remove-circle close-icon" ng-click="logoutTeam(team[0].team_number)" title="Log out all members of {{team[0].team_name}}" ng-if="user_admin || mentor_team === team[0].team_number"></span>
                 </div>
                 <span class="label" ng-class-even="'label-primary'" ng-class-odd="'label-info'" ng-repeat="user in team track by $index">
                     <a ng-href="#/profile/{{ user.user_id }}">{{ user.user_name }}</a>

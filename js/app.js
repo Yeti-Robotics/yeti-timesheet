@@ -1071,6 +1071,7 @@ app.controller("ProfileController", function ($scope, $rootScope, $location, $ro
         userService.getCurrentUser(localStorage.SESSION_KEY).then(function (data) {
             $scope.userData = data.user;
             $scope.userId = data.user.user_id;
+            $scope.currentUserId = data.user.user_id;
             $scope.loadUserTime();
         }, function (data) {
             console.log(data);
@@ -1080,6 +1081,11 @@ app.controller("ProfileController", function ($scope, $rootScope, $location, $ro
     $scope.loadUserById = function (userId) {
         userService.getUser($scope.userId, localStorage.SESSION_KEY).then(function (data) {
             $scope.userData = data.user;
+            userService.getCurrentUser(localStorage.SESSION_KEY).then(function (data) {
+                $scope.currentUserId = data.user.user_id;
+            }, function (data) {
+                console.log(data);
+            });
         }, function (data) {
             console.log(data);
         });

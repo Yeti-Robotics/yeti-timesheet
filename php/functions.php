@@ -671,9 +671,9 @@ function getCurrentUser($db, $sessionKey) {
 }
 
 function login($db, $userId, $password) {
-    $query = "SELECT user_admin, (CASE WHEN user_mentor THEN team_number ELSE 0 END) as mentor_team
-                FROM user WHERE user_id = ? AND user_password = MD5(?)";
-    $result = executeSelect($db, $query, "ss", $userId, $password);
+    $query = "SELECT user_id, user_admin, (CASE WHEN user_mentor THEN team_number ELSE 0 END) as mentor_team
+                FROM user WHERE (user_id = ? OR user_email LIKE ?) AND user_password = MD5(?)";
+    $result = executeSelect($db, $query, "sss", $userId, $userId, $password);
     $success = false;
     $response = [];
     if ($result) {
@@ -685,7 +685,7 @@ function login($db, $userId, $password) {
     if ($success) {
         $sessionKey = sha1($userId + time());
         $query = "INSERT INTO session (user_id, session_key) VALUES (?, ?)";
-        $success = executeQuery($db, $query, "ss", $userId, $sessionKey);
+        $success = executeQuery($db, $query, "ss", $response["user_id"], $sessionKey);
         if (!$success) {
             return false;
         }

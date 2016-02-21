@@ -8,9 +8,9 @@
             <form id="add_user_form">
                 <div class="form-group" required>
                     <label>Time In:</label>
-                    <input class="form-control" ng-model="timelog_timein" type="text" placeholder="yyyy-mm-dd hh:mm">
+                    <input id="edit-log-timein" class="form-control" ng-model="timelog_timein" type="text" placeholder="yyyy-mm-dd hh:mm">
                     <label>Time Out:</label>
-                    <input class="form-control" ng-model="timelog_timeout" type="text" placeholder="yyyy-mm-dd hh:mm">
+                    <input id="edit-log-timeout" class="form-control" ng-model="timelog_timeout" type="text" placeholder="yyyy-mm-dd hh:mm">
                 </div>
                 <div class="form-group">
                     <button class="btn btn-primary btn-block" data-dismiss="modal" ng-click="saveChanges()">Save Changes</button>

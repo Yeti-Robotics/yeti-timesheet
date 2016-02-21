@@ -80,7 +80,7 @@ app.service("loginService", function ($http, $q) {
             url: location.pathname + "php/validateSession.php",
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded",
-                "SESSION_KEY": sessionKey
+                "Session-Key": sessionKey
             }
         };
         deferred = $q.defer();
@@ -103,7 +103,7 @@ app.service("logoutService", function ($http, $q) {
             url: location.pathname + "php/logout.php",
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded",
-                "SESSION_KEY": sessionKey
+                "Session-Key": sessionKey
             }
         };
         deferred = $q.defer();
@@ -126,7 +126,7 @@ app.service("timesheetService", function ($http, $q) {
             url: location.pathname + "php/addTimelog.php",
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded",
-                "SESSION_KEY": sessionKey
+                "Session-Key": sessionKey
             },
             data: $.param({
                 user_id: userId
@@ -148,7 +148,7 @@ app.service("timesheetService", function ($http, $q) {
             url: location.pathname + "php/teamSignout.php",
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded",
-                "SESSION_KEY": sessionKey
+                "Session-Key": sessionKey
             },
             data: $.param({
                 team_number: teamNumber
@@ -170,7 +170,7 @@ app.service("timesheetService", function ($http, $q) {
             url: location.pathname + "php/getTimelog.php",
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded",
-                "SESSION_KEY": sessionKey
+                "Session-Key": sessionKey
             },
             params: {
                 timelog_id: timelogId
@@ -192,7 +192,7 @@ app.service("timesheetService", function ($http, $q) {
             url: location.pathname + "php/getTimelogs.php",
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded",
-                "SESSION_KEY": sessionKey
+                "Session-Key": sessionKey
             },
             params: filters
         };
@@ -212,7 +212,7 @@ app.service("timesheetService", function ($http, $q) {
             url: location.pathname + "php/getLoggedInUsers.php",
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded",
-                "SESSION_KEY": sessionKey
+                "Session-Key": sessionKey
             }
         };
         deferred = $q.defer();
@@ -231,7 +231,7 @@ app.service("timesheetService", function ($http, $q) {
             url: location.pathname + "php/updateTimelog.php",
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded",
-                "SESSION_KEY": sessionKey
+                "Session-Key": sessionKey
             },
             data: $.param({
                 timelog_id: timelogId,
@@ -255,7 +255,7 @@ app.service("timesheetService", function ($http, $q) {
             url: location.pathname + "php/deleteTimelog.php",
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded",
-                "SESSION_KEY": sessionKey
+                "Session-Key": sessionKey
             },
             data: $.param({
                 timelog_id: timelogId
@@ -277,7 +277,7 @@ app.service("timesheetService", function ($http, $q) {
             url: location.pathname + "php/writeTimelog.php",
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded",
-                "SESSION_KEY": sessionKey
+                "Session-Key": sessionKey
             },
             data: $.param({
                 user_id: userId,
@@ -305,7 +305,7 @@ app.service("teamService", function ($http, $q) {
             url: location.pathname + "php/addTeam.php",
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded",
-                "SESSION_KEY": sessionKey
+                "Session-Key": sessionKey
             },
             data: $.param({
                 team_name: teamName,
@@ -328,7 +328,7 @@ app.service("teamService", function ($http, $q) {
             url: location.pathname + "php/getTeams.php",
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded",
-                "SESSION_KEY": sessionKey
+                "Session-Key": sessionKey
             }
         };
         deferred = $q.defer();
@@ -347,7 +347,7 @@ app.service("teamService", function ($http, $q) {
             url: location.pathname + "php/getTeam.php",
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded",
-                "SESSION_KEY": sessionKey
+                "Session-Key": sessionKey
             },
             params: {
                 team_number: teamNumber
@@ -368,7 +368,7 @@ app.service("teamService", function ($http, $q) {
             method: "GET",
             url: location.pathname + "php/getTeamTimes.php",
             headers: {
-                "SESSION_KEY": sessionKey
+                "Session-Key": sessionKey
             },
             params: {
                 team_number: teamNumber,
@@ -391,7 +391,7 @@ app.service("teamService", function ($http, $q) {
             method: "GET",
             url: location.pathname + "php/getTeamsAndUsers.php",
             headers: {
-                "SESSION_KEY": sessionKey
+                "Session-Key": sessionKey
             }
         };
         deferred = $q.defer();
@@ -409,7 +409,7 @@ app.service("teamService", function ($http, $q) {
             method: "GET",
             url: location.pathname + "php/getHoursByTeam.php",
             headers: {
-                "SESSION_KEY": sessionKey
+                "Session-Key": sessionKey
             },
             params: {
                 time_start: startDate,
@@ -436,7 +436,7 @@ app.service("userService", function ($http, $q) {
             url: location.pathname + "php/addUser.php",
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded",
-                "SESSION_KEY": sessionKey
+                "Session-Key": sessionKey
             },
             data: $.param(userData)
         };
@@ -456,7 +456,7 @@ app.service("userService", function ($http, $q) {
             url: location.pathname + "php/getUsers.php",
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded",
-                "SESSION_KEY": sessionKey
+                "Session-Key": sessionKey
             },
             params: {
                 team_number: teamNumber
@@ -478,7 +478,7 @@ app.service("userService", function ($http, $q) {
             url: location.pathname + "php/getUser.php",
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded",
-                "SESSION_KEY": sessionKey
+                "Session-Key": sessionKey
             },
             params: {
                 user_id: userId
@@ -500,7 +500,7 @@ app.service("userService", function ($http, $q) {
             url: location.pathname + "php/getCurrentUser.php",
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded",
-                "SESSION_KEY": sessionKey
+                "Session-Key": sessionKey
             }
         };
         deferred = $q.defer();
@@ -519,7 +519,7 @@ app.service("userService", function ($http, $q) {
             url: location.pathname + "php/getUserTime.php",
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded",
-                "SESSION_KEY": sessionKey
+                "Session-Key": sessionKey
             },
             params: {
                 user_id: userId,
@@ -543,7 +543,7 @@ app.service("userService", function ($http, $q) {
             url: location.pathname + "php/idTaken.php",
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded",
-                "SESSION_KEY": sessionKey
+                "Session-Key": sessionKey
             },
             params: {
                 user_id: userId
@@ -564,7 +564,7 @@ app.service("userService", function ($http, $q) {
             method: "GET",
             url: location.pathname + "php/getHours.php",
             headers: {
-                "SESSION_KEY": sessionKey
+                "Session-Key": sessionKey
             },
             params: {
                 user_id: userId
@@ -585,7 +585,7 @@ app.service("userService", function ($http, $q) {
             method: "GET",
             url: location.pathname + "php/getHoursInRange.php",
             headers: {
-                "SESSION_KEY": sessionKey
+                "Session-Key": sessionKey
             },
             params: {
                 user_id: userId,
@@ -766,6 +766,8 @@ app.controller("ViewLogsController", function ($scope, $http, $location, timeshe
     $scope.prevPageExists = false;
     $scope.nextPageExists = false;
     filterNames = ["user_name", "user_id", "team_name", "team_number", "time_start", "time_end"];
+    $scope.time_start = getDateString(new Date());
+    $scope.time_end = getDateString(new Date());
 
     $scope.submit = function () {
         var i;
@@ -847,6 +849,16 @@ app.controller("ViewLogsController", function ($scope, $http, $location, timeshe
         });
     };
     
+    $scope.updateDateFields = function () {
+        $scope.time_start = $("#search-time-start").val();
+        $scope.time_end = $("#search-time-end").val();
+    };
+    
+    $("#search-time-start, #search-time-end").datetimepicker({
+        format: "YYYY-MM-DD"
+    });
+    $("#search-time-start, #search-time-end").on("dp.change", $scope.updateDateFields);
+
     $scope.getLogs();
 });
 
@@ -920,7 +932,6 @@ app.controller("ViewTeamsController", function ($scope, $rootScope, $location, u
                     hours: parseFloat(item.hours)
                 };
             }
-            console.log(teams);
             startDate = new Date($scope.startDate);
             endDate = new Date($scope.endDate);
             dates = [];
@@ -935,7 +946,6 @@ app.controller("ViewTeamsController", function ($scope, $rootScope, $location, u
                 }
                 dates.push(startDate.toLocaleDateString());
             }
-            console.log(series);
             hourChart(series, dates);
         }, function (data) {
             console.log(data);
@@ -955,6 +965,16 @@ app.controller("ViewTeamsController", function ($scope, $rootScope, $location, u
             });
         }
     };
+    
+    $scope.updateRangeFields = function () {
+        $scope.startDate = $("#time-start").val();
+        $scope.endDate = $("#time-end").val();
+    };
+    
+    $("#time-start, #time-end").datetimepicker({
+        format: "YYYY-MM-DD"
+    });
+    $("#time-start, #time-end").on("dp.change", $scope.updateRangeFields);
 
     teamService.getTeams(localStorage.SESSION_KEY).then(function (data) {
         $scope.teamsListed = data.teams;
@@ -972,8 +992,8 @@ app.controller("ProfileController", function ($scope, $rootScope, $location, $ro
     $scope.userTime = {};
     currentDate = new Date();
     prevDate = new Date(currentDate - 2592000000);
-    $scope.timeStart = prevDate.getFullYear() + "-" + (prevDate.getMonth() + 1) + "-" + prevDate.getDate();
-    $scope.timeEnd = currentDate.getFullYear() + "-" + (currentDate.getMonth() + 1) + "-" + currentDate.getDate();
+    $scope.timeStart = getDateString(prevDate);
+    $scope.timeEnd = getDateString(currentDate);
 
     // Hour chart
     function hourChart(data, categories) {
@@ -1076,6 +1096,16 @@ app.controller("ProfileController", function ($scope, $rootScope, $location, $ro
             console.log(data);
         });
     };
+    
+    $scope.updateRangeFields = function () {
+        $scope.timeStart = $("#time-start").val();
+        $scope.timeEnd = $("#time-end").val();
+    };
+    
+    $("#time-start, #time-end").datetimepicker({
+        format: "YYYY-MM-DD"
+    });
+    $("#time-start, #time-end").on("dp.change", $scope.updateRangeFields);
 
     $scope.userId = $routeParams.userId;
     if ($scope.userId) {
@@ -1149,6 +1179,18 @@ app.controller("EditLogController", function ($scope, $rootScope, $window, $rout
             console.log(data);
         });
     };
+    
+    $scope.updateEditFields = function () {
+        $scope.timelog_timein = $("#edit-log-timein").val();
+        $scope.timelog_timeout = $("#edit-log-timeout").val();
+    };
+    
+    $("#editModal").on("show.bs.modal", function () {
+        $("#edit-log-timein, #edit-log-timeout").datetimepicker({
+            format: "YYYY-MM-DD HH:mm"
+        });
+        $("#edit-log-timein, #edit-log-timeout").on("dp.change", $scope.updateEditFields);
+    });
 
     timelogId = $routeParams.timelogId;
     if (timelogId) {
@@ -1251,6 +1293,16 @@ app.controller("TeamPageController", function ($scope, $rootScope, $routeParams,
         }
     };
     
+    $scope.updateRangeFields = function () {
+        $scope.timeStart = $("#time-start").val();
+        $scope.timeEnd = $("#time-end").val();
+    };
+    
+    $("#time-start, #time-end").datetimepicker({
+        format: "YYYY-MM-DD"
+    });
+    $("#time-start, #time-end").on("dp.change", $scope.updateRangeFields);
+    
     $scope.teamNumber = $routeParams.teamNumber;
     loadTeam();
 });
@@ -1275,7 +1327,7 @@ app.controller("CreateLogController", function ($scope, $rootScope, timesheetSer
                 $scope.getLoggedInUsers();
             }
         }, function (data) {
-            displayMessage('Error creating timelog.', 'success');
+            displayMessage('Error creating timelog.', 'danger');
             console.log(data);
         });
     };

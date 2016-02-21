@@ -543,8 +543,8 @@ function logToFile($fileName, $message) {
 
 function getSessionKey() {
     $headers = getallheaders();
-    if (isset($headers["SESSION_KEY"])) {
-        return $headers["SESSION_KEY"];
+    if (isset($headers["Session-Key"])) {
+        return $headers["Session-Key"];
     }
     return false;
 }

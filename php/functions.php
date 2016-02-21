@@ -299,6 +299,23 @@ function getHoursByTeam($db, $startDate, $endDate, $sessionKey) {
     }
 }
 
+function changePassword($db, $oldPassword, $newPassword, $sessionKey) {
+    $userId = getUserID($db, $sessionKey);
+    $query = "SELECT user_id FROM user WHERE user_password = MD5(?) AND user_id = ?";
+    $result = executeSelect($db, $query, "ss", $oldPassword, $userId);
+    $success = false;
+    if ($result) {
+        while ($row = $result->fetch_assoc()) {
+            $success = true;
+        }
+    }
+    if ($success) {
+        $query = "UPDATE user SET user_password = MD5(?) WHERE user_password = MD5(?) AND user_id = ?";
+        return executeQuery($db, $query, "sss", $newPassword, $oldPassword, $userId);
+    }
+    return false;
+}
+
 function addTimelog($db, $userId, $sessionKey) {
     if (!hasUserMentorRights($db, $userId, $sessionKey)) {
         return false;

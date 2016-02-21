@@ -7,6 +7,7 @@
             <a ng-href="#/team/{{ userData.team_number }}">Team {{ userData.team_number }} {{ userData.team_name }}</a>
         </h4>
         <label>E-Mail Address:</label> {{ userData.user_email }}
+        <div><a ng-if="userId === currentUserId" href="#/change_password">Change Password</a></div>
         <h3>Time</h3>
         <div class="row form-group">
             <form ng-submit="loadUserTime()">

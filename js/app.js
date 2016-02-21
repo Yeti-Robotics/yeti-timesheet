@@ -602,6 +602,26 @@ app.service("userService", function ($http, $q) {
         });
         return deferred.promise;
     };
+    
+    this.changePassword = function (passData, sessionKey) {
+        var config, deferred;
+        config = {
+            method: "POST",
+            url: location.pathname + "php/changePassword.php",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "Session-Key": sessionKey
+            },
+            data: $.param(passData)
+        };
+        deferred = $q.defer();
+        $http(config).success(function (data) {
+            deferred.resolve(data);
+        }).error(function (data) {
+            deferred.reject(data);
+        });
+        return deferred.promise;
+    };
 });
 
 app.controller("LoginController", function ($scope, $http, $location, $rootScope, loginService) {
@@ -1142,7 +1162,8 @@ app.controller("AddUserController", function ($scope, $rootScope, $location, use
     };
 
     $scope.doPassesMatch = function () {
-        $scope.passMatch = ($scope.formData.user_password === $scope.formData.user_password_confirm);
+        $scope.passMatch = ($scope.formData.user_password === $scope.formData.user_password_confirm)
+                            && $scope.formData.user_password_confirm;
     };
 
     $scope.isNumTaken = function () {
@@ -1396,6 +1417,23 @@ app.controller("CreateLogController", function ($scope, $rootScope, timesheetSer
     });
 });
 
+app.controller("ChangePasswordController", function ($scope, $rootScope, $location, userService) {
+    "use strict";
+    
+    $scope.formData = {};
+
+    $scope.submit = function () {
+        userService.changePassword($scope.formData, localStorage.SESSION_KEY).then(function (data) {
+            displayMessage("Password changed successfully.", "success");
+            $location.path("/profile");
+        }, function (data) {
+            console.log(data);
+            displayMessage("Failure changing password.", "danger");
+            $location.path("/profile");
+        });
+    };
+});
+
 app.config(['$routeProvider', function ($routeProvider, $locationProvider) {
     'use strict';
 
@@ -1430,6 +1468,8 @@ app.config(['$routeProvider', function ($routeProvider, $locationProvider) {
         templateUrl: 'html/profile.html'
     }).when('/team/:teamNumber', {
         templateUrl: 'html/teamPage.html'
+    }).when('/change_password', {
+        templateUrl: 'html/changePassword.html'
     }).otherwise({
         redirectTo: '/'
     });

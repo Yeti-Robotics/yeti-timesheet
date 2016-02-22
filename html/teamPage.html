@@ -1,0 +1,47 @@
+<div class="container-fluid">
+    <div ng-controller="TeamPageController">
+        <h2>{{ teamData.team_number }} {{ teamData.team_name }}</h2>
+        <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="headingOne">
+                <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">Members</a>
+            </div>
+            <div id="collapseOne" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingOne">
+                <div class="panel-body">
+                    <table class="table">
+                        <thead>
+                            <th>Name</th>
+                            <th>User ID</th>
+                            <th></th>
+                        </thead>
+                        <tbody>
+                            <tr ng-repeat="user in members track by $index">
+                                <td>{{ user.user_name }}</td>
+                                <td>{{ user.user_id }}</td>
+                                <td><a ng-href="#/profile/{{ user['user_id'] }}">Profile</a></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <a href="#/add_user">Add Member</a>
+        <h3>Time</h3>
+        <div class="row form-group">
+            <form ng-submit="loadHourChart()">
+                <div class="col-xs-4">
+                    <label>From:</label>
+                    <input id="time-start" class="form-control" ng-model="timeStart" type="datetime" />
+                </div>
+                <div class="col-xs-4">
+                    <label>To:</label>
+                    <input id="time-end" class="form-control" ng-model="timeEnd" type="datetime" />
+                </div>
+                <div class="col-xs-4">
+                    <label>&nbsp;</label>
+                    <button class="btn btn-block btn-primary" type="submit">Submit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div id="hour-chart-container" style="margin-top: 10px;"></div>
+</div>

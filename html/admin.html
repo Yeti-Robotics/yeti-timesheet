@@ -1,0 +1,62 @@
+<div class="container-fluid">
+    <div ng-controller="AdminController">
+        <fieldset>
+            <legend>Timesheet</legend>
+            <div class="form-group">
+                <form ng-submit="submit()">
+                    <div class="form-group">
+                        <label>User ID:</label>
+                        <input class="form-control" type="text" placeholder="Enter your user ID." ng-model="user_id" required/>
+                    </div>
+                    <button class="btn btn-block btn-primary" type="submit">Submit</button>
+                </form>
+            </div>
+        </fieldset>
+        
+        <div class="form-group">
+            <button class="btn btn-xs" type="button" data-toggle="modal" data-target="#createModal">Manual Time Input</button>
+        </div>
+        
+        <div class="user-label-container">
+            <div class="section-title">Currently Logged In</div>
+            <div class = "team-container" ng-repeat="team in loggedInUsers track by $index">
+                <div class="team">
+                    <a ng-href="#/team/{{team[0].team_number}}" ng-if="user_admin || mentor_team === team[0].team_number">{{team[0].team_number}} - {{team[0].team_name}}</a>
+                    <span ng-if="!(user_admin || mentor_team === team[0].team_number)">{{team[0].team_number}} - {{team[0].team_name}}</span>
+                    <span class="glyphicon glyphicon-remove-circle close-icon" ng-click="logoutTeam(team[0].team_number)" title="Log out all members of {{team[0].team_name}}" ng-if="user_admin || mentor_team === team[0].team_number"></span>
+                </div>
+                <span class="label" ng-class-even="'label-primary'" ng-class-odd="'label-info'" ng-repeat="user in team track by $index">
+                    <a ng-href="#/profile/{{ user.user_id }}" ng-if="user_admin || mentor_team === team[0].team_number">{{user.user_name}}</a>
+                    <span ng-if="!(user_admin || mentor_team === team[0].team_number)">{{ user.user_name }}</span>
+                    <span class="glyphicon glyphicon-remove close-icon" ng-click="logoutUser(user.user_id)" title="Log out {{user.user_name}}" ng-if="user_admin || mentor_team === team[0].team_number"></span>
+                </span>
+            </div>
+        </div>
+        
+        <div class="section-title">Timelogs Today</div>
+        <table class="table table-condensed table-striped">
+            <thead>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Time In</th>
+                <th>Time Out</th>
+                <th></th>
+            </thead>
+            <tbody>
+                <tr ng-repeat="log in logsListed track by $index">
+                    <td>{{ log["user_id"] }}</td>
+                    <td><a ng-href="#/profile/{{ log.user_id }}">{{ log["user_name"] }}</a></td>
+                    <td>{{ getTime(log["timelog_timein"]) }}</td>
+                    <td>{{ getTime(log["timelog_timeout"]) }}</td>
+                    <td><button class="btn btn-xs" type="button" ng-click="getLogData(log['timelog_id'])">Edit</button></td>
+                </tr>
+            </tbody>
+        </table>
+        <div id="createModal" class="modal fade" role="dialog">
+            <div ng-include="'html/createLog.html'"></div>
+        </div>
+        <div id="editModal" class="modal fade" role="dialog">
+            <div ng-include="'html/editLog.html'"></div>
+        </div>
+    </div>
+</div>

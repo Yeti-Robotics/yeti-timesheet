@@ -6,7 +6,7 @@ include("functions.php");
 header("Content-Type: application/json");
 
 $response = [];
-$teams = getTeams($db);
+$teams = getTeams($db, getSessionKey());
 if(is_array($teams)) {
     $response['teams'] = $teams;
 } else {

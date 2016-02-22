@@ -6,13 +6,14 @@ include("functions.php");
 header("Content-Type: application/json");
 
 $response = [];
-$filterNames = ["user_name", "user_id", "team_name", "team_number"];
+$filterNames = ["user_name", "user_id", "team_name", "team_number",
+                "time_limit", "time_start", "time_end", "num_low", "num_limit"];
 $filters = [];
 $hasFilters = false;
 for ($i = 0; $i < count($filterNames); $i++) {
     $filterName = $filterNames[$i];
-    if (isset($_POST[$filterName]) && $_POST[$filterName] != "") {
-        $filters[$filterName] = $_POST[$filterName];
+    if (isset($_GET[$filterName]) && $_GET[$filterName] != "") {
+        $filters[$filterName] = $_GET[$filterName];
         $hasFilters = true;
     } else {
         $filters[$filterName] = null;
@@ -20,7 +21,7 @@ for ($i = 0; $i < count($filterNames); $i++) {
 }
 $logs = [];
 if ($hasFilters) {
-    $logs = getTimelogs($db, $filters);
+    $logs = getTimelogs($db, $filters, getSessionKey());
 }
 if(is_array($logs)) {
     $response['timelogs'] = $logs;

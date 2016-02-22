@@ -1,0 +1,6 @@
+<div ng-if="user_admin || mentor_team">
+    <div ng-include="'html/admin.html'"></div>
+</div>
+<div ng-if="!(user_admin || mentor_team)">
+    <div ng-include="'html/profile.html'"></div>
+</div>

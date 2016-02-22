@@ -1,0 +1,40 @@
+<div class="container-fluid">
+    <h1>Teams</h1>
+    <table class="table">
+        <thead>
+            <th>Team Name</th>
+            <th>Team Number</th>
+            <th></th>
+        </thead>
+        <tbody>
+            <tr ng-repeat="team in teamsListed track by $index">
+                <td>{{ team["team_name"] }}</td>
+                <td>{{ team["team_number"] }}</td>
+                <td><a ng-if="user_admin || mentor_team === team.team_number" ng-href="#/team/{{ team['team_number'] }}">Team Page</a></td>
+            </tr>
+            <tr>
+                <td><a href="#/add_team" ng-if="user_admin">Add Team</a></td>
+                <td></td>
+                <td></td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <div class="row form-group">
+        <form ng-submit="getHoursByTeam()">
+            <div class="col-xs-4">
+                <label>From:</label>
+                <input id="time-start" class="form-control" ng-model="startDate" type="text"/>
+            </div>
+            <div class="col-xs-4">
+                <label>To:</label>
+                <input id="time-end" class="form-control" ng-model="endDate" type="text"/>
+            </div>
+            <div class="col-xs-4">
+                <label>&nbsp;</label>
+                <button class="btn btn-block btn-primary" type="submit">Submit</button>
+            </div>
+        </form>
+    </div>
+    <div id="team-hour-chart-container" style="height: 400px; margin-top: 10px;"></div>
+</div>

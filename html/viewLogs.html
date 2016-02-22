@@ -1,30 +1,71 @@
 <div class="container-fluid">
-    <h1>Timelogs</h1>
     <form id="timelog_filter_form" ng-submit="submit()">
+        <legend>Timelogs</legend>
         <div class="form-group">
-            <li>
-            <label for="user_name">Name:</label>
-            <input id="user_name" ng-model="formData.user_name" type="text" class="form-control"/>
-            </li>
-            <li>
-            <label for="user_id">User ID:</label>
-            <input id="user_id" ng-model="formData.user_id" type="text" class="form-control"/>
-            </li>
-            <li>
-            <label for="team_name">Team Name:</label>
-            <input id="team_name" ng-model="formData.team_name" type="text" class="form-control"/>
-            </li>
-            <li>
-            <label for="team_number">Team Number:</label>
-            <input id="team_number" ng-model="formData.team_number" type="number" class="form-control"/>
-            </li>
-            <button class="btn btn-primary btn-block" type="submit">Submit</button>
+            <div class="row form-group">
+                <div class="col-xs-6">
+                    <label>Name:</label>
+                    <input ng-model="user_name" type="text" class="form-control"/>
+                </div>
+                <div class="col-xs-6">
+                    <label>User ID:</label>
+                    <input ng-model="user_id" type="text" class="form-control"/>
+                </div>
+                <div class="col-xs-6">
+                    <label>Team Name:</label>
+                    <input ng-model="team_name" type="text" class="form-control"/>
+                </div>
+                <div class="col-xs-6">
+                    <label>Team Number:</label>
+                    <input ng-model="team_number" type="number" class="form-control"/>
+                </div>
+                <div class="col-xs-6">
+                    <label>Start Date:</label>
+                    <input id="search-time-start" ng-model="time_start" type="text" class="form-control" placeholder="yyyy-mm-dd"/>
+                </div>
+                <div class="col-xs-6">
+                    <label>End Date:</label>
+                    <input id="search-time-end" ng-model="time_end" type="text" class="form-control" placeholder="yyyy-mm-dd"/>
+                </div>
+            </div>
         </div>
-        <ul>
-            <li ng-repeat="log in logsListed track by $index">
-            {{ log["timesheet_timestamp"] }}
-            {{ log["user_name"] }}
-            </li>
-        </ul>
+        <button class="btn btn-primary btn-block" type="submit">Search</button>
+        <table class="table table-condensed table-striped" ng-if="logsListed[0]">
+            <thead>
+                <th>User ID</th>
+                <th>Name</th>
+                <th>Date</th>
+                <th>Time In</th>
+                <th>Time Out</th>
+                <th>Hours</th>
+                <th></th>
+            </thead>
+            <tbody>
+                <tr ng-repeat="log in logsListed track by $index">
+                    <td>{{ log["user_id"] }}</td>
+                    <td>{{ log["user_name"] }}</td>
+                    <td>{{ getDate(log["timelog_timein"]) }}</td>
+                    <td>{{ getTime(log["timelog_timein"]) }}</td>
+                    <td>{{ getTime(log["timelog_timeout"]) }}</td>
+                    <td>{{ log.hours }}</td>
+                    <td><button class="btn btn-xs" type="button" ng-click="getLogData(log['timelog_id'])">Edit</button></td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="row form-group" ng-if="filters.num_limit">
+            <div class="col-xs-6">
+                <button ng-if="prevPageExists" class="btn btn-block" ng-click="movePage(-1)">
+                    Previous Page
+                </button>
+            </div>
+            <div class="col-xs-6">
+                <button ng-if="nextPageExists" class="btn btn-block" ng-click="movePage(1)">
+                    Next Page
+                </button>
+            </div>
+        </div>
     </form>
+    <div id="editModal" class="modal fade" role="dialog">
+        <div ng-include="'html/editLog.html'"></div>
+    </div>
 </div>

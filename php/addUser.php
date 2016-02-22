@@ -15,7 +15,8 @@ if (isset($_POST["user_name"]) && isset($_POST["team_number"]) && isset($_POST["
         $response["error"] = "Password must contain multiple characters.";
     } else {
         $success = addUser($db, $_POST["user_number"], $_POST["user_name"], $_POST["team_number"],
-                           $_POST["user_email"], $_POST["user_password"], 0, isset($_POST["user_mentor"]));
+                           $_POST["user_email"], $_POST["user_password"], 0, isset($_POST["user_mentor"]),
+                            getSessionKey());
         if ($success) {
             http_response_code(201);
         } else {

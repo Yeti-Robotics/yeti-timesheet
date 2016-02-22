@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: 127.0.0.1
--- Generation Time: Jan 30, 2016 at 06:35 PM
+-- Generation Time: Feb 13, 2016 at 11:12 PM
 -- Server version: 10.1.8-MariaDB
 -- PHP Version: 5.6.14
 
@@ -32,7 +32,8 @@ DROP TABLE IF EXISTS `session`;
 CREATE TABLE `session` (
   `session_id` int(11) NOT NULL,
   `user_id` varchar(20) NOT NULL,
-  `session_key` varchar(64) NOT NULL
+  `session_key` varchar(64) NOT NULL,
+  `session_timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
@@ -57,7 +58,8 @@ DROP TABLE IF EXISTS `timelog`;
 CREATE TABLE `timelog` (
   `timelog_id` int(11) NOT NULL,
   `user_id` varchar(20) NOT NULL,
-  `timesheet_timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+  `timelog_timein` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `timelog_timeout` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
@@ -86,7 +88,9 @@ CREATE TABLE `user` (
 --
 ALTER TABLE `session`
   ADD PRIMARY KEY (`session_id`),
-  ADD KEY `user_id` (`user_id`);
+  ADD UNIQUE KEY `session_key_2` (`session_key`),
+  ADD KEY `user_id` (`user_id`),
+  ADD KEY `session_key` (`session_key`);
 
 --
 -- Indexes for table `team`
@@ -100,7 +104,9 @@ ALTER TABLE `team`
 --
 ALTER TABLE `timelog`
   ADD PRIMARY KEY (`timelog_id`),
-  ADD KEY `user_id` (`user_id`);
+  ADD KEY `user_id` (`user_id`),
+  ADD KEY `timelog_timein` (`timelog_timein`),
+  ADD KEY `timelog_timeout` (`timelog_timeout`);
 
 --
 -- Indexes for table `user`

@@ -8,7 +8,7 @@ header("Content-Type: application/json");
 $response = [];
 
 if (isset($_POST["team_number"]) && isset($_POST["team_name"])) {
-    $success = addTeam($db, $_POST["team_number"], $_POST["team_name"]);
+    $success = addTeam($db, $_POST["team_number"], $_POST["team_name"], getSessionKey());
     if ($success) {
         http_response_code(201);
     } else {

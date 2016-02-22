@@ -6,7 +6,7 @@ include("functions.php");
 header("Content-Type: application/json");
 
 $response = [];
-$logs = getLastTimelogs($db, 5);
+$logs = getLastTimelogs($db, 5, getSessionKey());
 if(is_array($logs)) {
     $response['timelogs'] = $logs;
 } else {

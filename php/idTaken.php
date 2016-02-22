@@ -6,7 +6,7 @@ include("functions.php");
 header("Content-Type: application/json");
 
 $response = [];
-$taken = idTaken($db, $_POST["user_id"]);
+$taken = idTaken($db, $_GET["user_id"]);
 if(is_bool($taken)) {
     $response["id_taken"] = $taken;
 } else {

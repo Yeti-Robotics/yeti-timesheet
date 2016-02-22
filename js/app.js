@@ -1,71 +1,13 @@
-/*global angular, $, console*/
+/*global angular, $, console, moment*/
+
+var app;
+app = angular.module('app', ['ngRoute']);
+var DATE_FORMAT = 'YYYY-MM-DD', TIME_FORMAT = "h:mm A", DATETIME_FORMAT = "YYYY-MM-DD hh:mm A";
 
 function displayMessage(message, alertType) {
     "use strict";
     $('.message-container').html(message).removeClass('alert-success alert-info alert-warning alert-danger').addClass('alert-' + alertType).stop(true).slideDown(500).delay(3000).slideUp(500);
 }
-    
-function countDayFrom(startDay, endDay) {
-    'use strict';
-    return Math.floor((endDay - startDay) / 86400000);
-}
-
-function getDateString(date) {
-    "use strict";
-    
-    var month, day;
-    month = date.getMonth() + 1;
-    if (month < 10) {
-        month = "0" + month;
-    }
-    day = date.getDate();
-    if (day < 10) {
-        day = "0" + day;
-    }
-    return date.getFullYear() + "-" + month + "-" + day;
-}
-
-function getTimeString(date) {
-    "use strict";
-    
-    var hours, minutes, ampm;
-    hours = date.getHours();
-    if (hours < 12) {
-        ampm = " AM";
-    } else {
-        ampm = " PM";
-    }
-    hours %= 12;
-    if (hours === 0) {
-        hours = 12;
-    }
-    if (hours < 10) {
-        hours = "0" + hours;
-    }
-    minutes = date.getMinutes();
-    if (minutes < 10) {
-        minutes = "0" + minutes;
-    }
-    return hours + ":" + minutes + ampm;
-}
-
-function getDateTimeString(date) {
-    "use strict";
-    return getDateString(date) + " " + getTimeString(date);
-}
-
-function getUnixSeconds(dateString) {
-    "use strict";
-    
-    if (dateString) {
-        return Math.floor(new Date(dateString).getTime() / 1000);
-    } else {
-        return null;
-    }
-}
-
-var app;
-app = angular.module('app', ['ngRoute']);
 
 app.run(function ($http, $rootScope, $location, loginService) {
     "use strict";
@@ -774,7 +716,7 @@ app.controller("AdminController", function ($scope, $http, $location, timesheetS
             return "";
         }
         unixTime *= 1000;
-        return getTimeString(new Date(unixTime));
+        return moment(unixTime).format(TIME_FORMAT);
     };
 
     $scope.logoutUser = function (userId) {
@@ -789,9 +731,11 @@ app.controller("AdminController", function ($scope, $http, $location, timesheetS
     $scope.getLogData = function (timelogId) {
         timesheetService.getTimelog(timelogId, localStorage.SESSION_KEY).then(function (data) {
             $scope.timelog_id = timelogId;
-            $scope.timelog_timein = getDateTimeString(new Date(data.timelog.timelog_timein));
-            $scope.timelog_timeout = getDateTimeString(new Date(data.timelog.timelog_timeout));
+            $scope.timelog_timein = moment(data.timelog.timelog_timein).format(DATETIME_FORMAT);
+            $scope.timelog_timeout = moment(data.timelog.timelog_timeout).format(DATETIME_FORMAT);
             $("#editModal").modal();
+            $('#edit-log-timein').val($scope.timelog_timein);
+            $('#edit-log-timeout').val($scope.timelog_timeout);
         }, function (data) {
             console.log(data);
         });
@@ -829,8 +773,8 @@ app.controller("ViewLogsController", function ($scope, $http, $location, timeshe
     $scope.prevPageExists = false;
     $scope.nextPageExists = false;
     filterNames = ["user_name", "user_id", "team_name", "team_number", "time_start", "time_end"];
-    $scope.time_start = getDateString(new Date());
-    $scope.time_end = getDateString(new Date());
+    $scope.time_start = moment().format(DATE_FORMAT);
+    $scope.time_end = moment().format(DATE_FORMAT);
 
     $scope.submit = function () {
         var i;
@@ -847,12 +791,12 @@ app.controller("ViewLogsController", function ($scope, $http, $location, timeshe
             return "";
         }
         unixTime *= 1000;
-        return getTimeString(new Date(unixTime));
+        return moment(unixTime).format(TIME_FORMAT);
     };
 
     $scope.getDate = function (unixTime) {
         unixTime *= 1000;
-        return new Date(unixTime).toLocaleDateString();
+        return moment(unixTime).format(DATE_FORMAT);
     };
     
     $scope.getHourDifference = function (timeStart, timeEnd) {
@@ -874,9 +818,11 @@ app.controller("ViewLogsController", function ($scope, $http, $location, timeshe
     $scope.getLogData = function (timelogId) {
         timesheetService.getTimelog(timelogId, localStorage.SESSION_KEY).then(function (data) {
             $scope.timelog_id = timelogId;
-            $scope.timelog_timein = getDateTimeString(new Date(data.timelog.timelog_timein));
-            $scope.timelog_timeout = getDateTimeString(new Date(data.timelog.timelog_timeout));
+            $scope.timelog_timein = moment(data.timelog.timelog_timein).format(DATETIME_FORMAT);
+            $scope.timelog_timeout = moment(data.timelog.timelog_timeout).format(DATETIME_FORMAT);
             $("#editModal").modal();
+            $('#edit-log-timein').val($scope.timelog_timein);
+            $('#edit-log-timeout').val($scope.timelog_timeout);
         }, function (data) {
             console.log(data);
         });
@@ -952,8 +898,8 @@ app.controller("ViewTeamsController", function ($scope, $rootScope, $location, u
     $scope.teamsListed = [];
     $scope.usersListed = [];
     $scope.usersByTeam = {};
-    $scope.startDate = getDateString(new Date(new Date().getTime() - (1000 * 60 * 60 * 24 * days)));
-    $scope.endDate = getDateString(new Date());
+    $scope.startDate = moment().subtract(days, 'days').format(DATE_FORMAT);
+    $scope.endDate = moment().format(DATE_FORMAT);
     
     // Hour chart
     function hourChart(data, categories) {
@@ -1000,19 +946,19 @@ app.controller("ViewTeamsController", function ($scope, $rootScope, $location, u
                     hours: parseFloat(item.hours)
                 };
             }
-            startDate = new Date($scope.startDate);
-            endDate = new Date($scope.endDate);
+            startDate = moment($scope.startDate);
+            endDate = moment($scope.endDate);
             dates = [];
             for (i = 0; startDate <= endDate; i += 1) {
-                startDate = new Date(startDate.getTime() + (1000 * 60 * 60 * 24));
                 for (j = 0; j < series.length; j += 1) {
-                    if (teams[series[j].name].hasOwnProperty(getDateString(startDate))) {
-                        series[j].data[i] = teams[series[j].name][getDateString(startDate)].hours;
+                    if (teams[series[j].name].hasOwnProperty(startDate.format(DATE_FORMAT))) {
+                        series[j].data[i] = teams[series[j].name][startDate.format(DATE_FORMAT)].hours;
                     } else {
                         series[j].data[i] = 0;
                     }
                 }
-                dates.push(startDate.toLocaleDateString());
+                dates.push(startDate.format(DATE_FORMAT));
+                startDate = moment(startDate).add(1, 'day');
             }
             hourChart(series, dates);
         }, function (data) {
@@ -1056,12 +1002,10 @@ app.controller("ViewTeamsController", function ($scope, $rootScope, $location, u
 app.controller("ProfileController", function ($scope, $rootScope, $location, $routeParams, userService) {
     "use strict";
 
-    var currentDate, prevDate, hourChartData, i;
+    var hourChartData, i;
     $scope.userTime = {};
-    currentDate = new Date();
-    prevDate = new Date(currentDate - 2592000000);
-    $scope.timeStart = getDateString(prevDate);
-    $scope.timeEnd = getDateString(currentDate);
+    $scope.timeStart = moment().subtract(1, 'month').format(DATE_FORMAT);
+    $scope.timeEnd = moment().format(DATE_FORMAT);
 
     // Hour chart
     function hourChart(data, categories) {
@@ -1096,31 +1040,27 @@ app.controller("ProfileController", function ($scope, $rootScope, $location, $ro
     }
     
     function loadHourChart() {
-        if ($scope.userId && countDayFrom(new Date($scope.timeStart), new Date($scope.timeEnd)) <= 366) {
+        if ($scope.userId && moment($scope.timeEnd).diff($scope.timeStart, 'days') <= 366) {
             var timeStart, timeEnd;
-            timeStart = new Date($scope.timeStart);
-            timeStart /= 1000;
+            timeStart = moment($scope.timeStart).unix();
             timeEnd = $scope.timeEnd;
             if (timeEnd.length < 12) {
                 timeEnd += " 23:59:59";
             }
-            timeEnd = new Date(timeEnd);
-            timeEnd /= 1000;
+            timeEnd = moment(timeEnd).unix();
             userService.getHoursInRange($scope.userId, timeStart, timeEnd, localStorage.SESSION_KEY).then(function (data) {
                 var startSeconds, endSeconds, dateDist, hourChartDates, thisDate;
                 hourChartData = [];
                 hourChartDates = [];
-                startSeconds = new Date($scope.timeStart);
-                startSeconds -= 0;
-                endSeconds = new Date($scope.timeEnd);
-                endSeconds -= 0;
+                startSeconds = moment($scope.timeStart).valueOf();
+                endSeconds = moment($scope.timeEnd).valueOf();
                 for (i = startSeconds; i < endSeconds; i += 86400000) {
                     hourChartData.push(0);
-                    thisDate = new Date(i);
-                    hourChartDates.push(new Date(i + 86400000).toLocaleDateString());
+                    thisDate = moment(i);
+                    hourChartDates.push(moment(i + 86400000).format(DATE_FORMAT));
                 }
                 for (i = 0; i < data.timelog.length; i += 1) {
-                    dateDist = countDayFrom(new Date($scope.timeStart), new Date(data.timelog[i].date));
+                    dateDist = moment(data.timelog[i].date).diff($scope.timeStart, 'days');
                     if (dateDist < hourChartData.length) {
                         hourChartData[dateDist] = (parseFloat(data.timelog[i].hours) || 0);
                     }
@@ -1148,6 +1088,7 @@ app.controller("ProfileController", function ($scope, $rootScope, $location, $ro
             $scope.userData = data.user;
             userService.getCurrentUser(localStorage.SESSION_KEY).then(function (data) {
                 $scope.currentUserId = data.user.user_id;
+                $scope.userId = $scope.currentUserId;
             }, function (data) {
                 console.log(data);
             });
@@ -1231,8 +1172,8 @@ app.controller("EditLogController", function ($scope, $rootScope, $window, $rout
     var timelogId;
 
     $scope.saveChanges = function () {
-        timesheetService.updateTimelog($scope.timelog_id, getUnixSeconds($scope.timelog_timein),
-                                       getUnixSeconds($scope.timelog_timeout),
+        timesheetService.updateTimelog($scope.timelog_id, moment($scope.timelog_timein, DATETIME_FORMAT).unix(),
+                                       moment($scope.timelog_timeout, DATETIME_FORMAT).unix(),
                                        localStorage.SESSION_KEY).then(function (data) {
             displayMessage("Timelog updated sucessfully.", "success");
             $scope.getLogs();
@@ -1262,8 +1203,6 @@ app.controller("EditLogController", function ($scope, $rootScope, $window, $rout
     };
     
     $("#editModal").on("show.bs.modal", function () {
-        $('#edit-log-timein').val($scope.timelog_timein);
-        $('#edit-log-timeout').val($scope.timelog_timeout);
         $("#edit-log-timein, #edit-log-timeout").datetimepicker({
             format: "YYYY-MM-DD hh:mm A"
         });
@@ -1285,13 +1224,11 @@ app.controller("EditLogController", function ($scope, $rootScope, $window, $rout
 app.controller("TeamPageController", function ($scope, $rootScope, $routeParams, teamService) {
     'use strict';
 
-    var currentDate, prevDate, hourChartData, i;
+    var hourChartData, i;
     $scope.members = [];
     $scope.buttonText = "Button";
-    currentDate = new Date();
-    prevDate = new Date(currentDate - 2592000000);
-    $scope.timeStart = prevDate.getFullYear() + "-" + (prevDate.getMonth() + 1) + "-" + prevDate.getDate();
-    $scope.timeEnd = currentDate.getFullYear() + "-" + (currentDate.getMonth() + 1) + "-" + currentDate.getDate();
+    $scope.timeStart = moment().subtract(1, 'month').format(DATE_FORMAT);
+    $scope.timeEnd = moment().format(DATE_FORMAT);
 
     // Hour chart
     function hourChart(data) {
@@ -1348,7 +1285,7 @@ app.controller("TeamPageController", function ($scope, $rootScope, $routeParams,
     }
     
     $scope.loadHourChart = function () {
-        if ($scope.teamNumber && countDayFrom(new Date($scope.timeStart), new Date($scope.timeEnd)) <= 366) {
+        if ($scope.teamNumber && moment($scope.timeEnd).diff($scope.timeStart, 'days') <= 366) {
             var timeEnd = $scope.timeEnd;
             if (timeEnd.length < 12) {
                 timeEnd += " 23:59:59";
@@ -1394,8 +1331,8 @@ app.controller("CreateLogController", function ($scope, $rootScope, timesheetSer
     $scope.teamUsers = {};
 
     $scope.createTimelog = function () {
-        timesheetService.writeTimelog($scope.user_id, getUnixSeconds($scope.timelog_timein),
-                                      getUnixSeconds($scope.timelog_timeout),
+        timesheetService.writeTimelog($scope.user_id, moment($scope.timelog_timein, DATETIME_FORMAT).unix(),
+                                      moment($scope.timelog_timeout, DATETIME_FORMAT).unix(),
                                       localStorage.SESSION_KEY).then(function (data) {
             displayMessage('Timelog created.', 'success');
             $scope.clearFields();

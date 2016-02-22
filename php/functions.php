@@ -341,11 +341,12 @@ function addTimelog($db, $userId, $sessionKey) {
 }
 
 function writeTimelog($db, $userId, $timelogIn, $timelogOut, $sessionKey) {
+    logToFile(LOG_FILE, $userId);
     if (!hasUserMentorRights($db, $userId, $sessionKey)) {
         return false;
     }
     $query = "INSERT INTO timelog (user_id, timelog_timein, timelog_timeout)
-				VALUES (?, ?, (CASE ? WHEN '' THEN NULL ELSE ? END))";
+				VALUES (?, FROM_UNIXTIME(?), (CASE ? WHEN '' THEN NULL ELSE FROM_UNIXTIME(?) END))";
     return executeQuery($db, $query, "ssss", $userId, $timelogIn, $timelogOut, $timelogOut);
 }
 
@@ -477,12 +478,14 @@ function getLastTimelogs($db, $limit, $sessionKey) {
 function updateTimelog($db, $timelogId, $timelogIn, $timelogOut, $sessionKey) {
     if (isAdmin($db, $sessionKey)) {
         $query = "UPDATE timelog SET
-                    timelog_timein = ?, timelog_timeout = (CASE ? WHEN '' THEN NULL ELSE ? END)
+                    timelog_timein = FROM_UNIXTIME(?),
+                    timelog_timeout = (CASE ? WHEN '' THEN NULL ELSE FROM_UNIXTIME(?) END)
                     WHERE timelog.timelog_id = ?";
         return executeQuery($db, $query, "sssi", $timelogIn, $timelogOut, $timelogOut, $timelogId);
     } elseif (isMentor($db, $sessionKey)) {
         $query = "UPDATE timelog SET
-                    timelog_timein = ?, timelog_timeout = (CASE ? WHEN '' THEN NULL ELSE ? END)
+                    timelog_timein = FROM_UNIXTIME(?),
+                    timelog_timeout = (CASE ? WHEN '' THEN NULL ELSE FROM_UNIXTIME(?) END)
                     WHERE timelog.timelog_id = ? AND user_id IN
                     (SELECT user_id FROM user WHERE team_number = ?)";
         return executeQuery($db, $query, "sssii", $timelogIn, $timelogOut, $timelogOut, $timelogId, getMentorTeam($db, $sessionKey));

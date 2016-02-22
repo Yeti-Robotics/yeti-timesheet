@@ -25,6 +25,45 @@ function getDateString(date) {
     return date.getFullYear() + "-" + month + "-" + day;
 }
 
+function getTimeString(date) {
+    "use strict";
+    
+    var hours, minutes, ampm;
+    hours = date.getHours();
+    if (hours < 12) {
+        ampm = " AM";
+    } else {
+        ampm = " PM";
+    }
+    hours %= 12;
+    if (hours === 0) {
+        hours = 12;
+    }
+    if (hours < 10) {
+        hours = "0" + hours;
+    }
+    minutes = date.getMinutes();
+    if (minutes < 10) {
+        minutes = "0" + minutes;
+    }
+    return hours + ":" + minutes + ampm;
+}
+
+function getDateTimeString(date) {
+    "use strict";
+    return getDateString(date) + " " + getTimeString(date);
+}
+
+function getUnixSeconds(dateString) {
+    "use strict";
+    
+    if (dateString) {
+        return Math.floor(new Date(dateString).getTime() / 1000);
+    } else {
+        return null;
+    }
+}
+
 var app;
 app = angular.module('app', ['ngRoute']);
 
@@ -735,7 +774,7 @@ app.controller("AdminController", function ($scope, $http, $location, timesheetS
             return "";
         }
         unixTime *= 1000;
-        return new Date(unixTime).toLocaleTimeString();
+        return getTimeString(new Date(unixTime));
     };
 
     $scope.logoutUser = function (userId) {
@@ -750,8 +789,9 @@ app.controller("AdminController", function ($scope, $http, $location, timesheetS
     $scope.getLogData = function (timelogId) {
         timesheetService.getTimelog(timelogId, localStorage.SESSION_KEY).then(function (data) {
             $scope.timelog_id = timelogId;
-            $scope.timelog_timein = data.timelog.timelog_timein;
-            $scope.timelog_timeout = data.timelog.timelog_timeout;
+            $scope.timelog_timein = getDateTimeString(new Date(data.timelog.timelog_timein));
+            $scope.timelog_timeout = getDateTimeString(new Date(data.timelog.timelog_timeout));
+            $("#editModal").modal();
         }, function (data) {
             console.log(data);
         });
@@ -807,7 +847,7 @@ app.controller("ViewLogsController", function ($scope, $http, $location, timeshe
             return "";
         }
         unixTime *= 1000;
-        return new Date(unixTime).toLocaleTimeString();
+        return getTimeString(new Date(unixTime));
     };
 
     $scope.getDate = function (unixTime) {
@@ -816,7 +856,11 @@ app.controller("ViewLogsController", function ($scope, $http, $location, timeshe
     };
     
     $scope.getHourDifference = function (timeStart, timeEnd) {
-        return Math.round((timeEnd - timeStart) / 360) / 10;
+        var difference = Math.round((timeEnd - timeStart) / 360) / 10;
+        if (difference < 0) {
+            difference = 0;
+        }
+        return difference;
     };
 
     $scope.goToPage = function (pageNumber) {
@@ -830,8 +874,9 @@ app.controller("ViewLogsController", function ($scope, $http, $location, timeshe
     $scope.getLogData = function (timelogId) {
         timesheetService.getTimelog(timelogId, localStorage.SESSION_KEY).then(function (data) {
             $scope.timelog_id = timelogId;
-            $scope.timelog_timein = data.timelog.timelog_timein;
-            $scope.timelog_timeout = data.timelog.timelog_timeout;
+            $scope.timelog_timein = getDateTimeString(new Date(data.timelog.timelog_timein));
+            $scope.timelog_timeout = getDateTimeString(new Date(data.timelog.timelog_timeout));
+            $("#editModal").modal();
         }, function (data) {
             console.log(data);
         });
@@ -1186,7 +1231,8 @@ app.controller("EditLogController", function ($scope, $rootScope, $window, $rout
     var timelogId;
 
     $scope.saveChanges = function () {
-        timesheetService.updateTimelog($scope.timelog_id, $scope.timelog_timein, $scope.timelog_timeout,
+        timesheetService.updateTimelog($scope.timelog_id, getUnixSeconds($scope.timelog_timein),
+                                       getUnixSeconds($scope.timelog_timeout),
                                        localStorage.SESSION_KEY).then(function (data) {
             displayMessage("Timelog updated sucessfully.", "success");
             $scope.getLogs();
@@ -1219,7 +1265,7 @@ app.controller("EditLogController", function ($scope, $rootScope, $window, $rout
         $('#edit-log-timein').val($scope.timelog_timein);
         $('#edit-log-timeout').val($scope.timelog_timeout);
         $("#edit-log-timein, #edit-log-timeout").datetimepicker({
-            format: "YYYY-MM-DD HH:mm"
+            format: "YYYY-MM-DD hh:mm A"
         });
         $("#edit-log-timein, #edit-log-timeout").on("dp.change", $scope.updateEditFields);
     });
@@ -1348,8 +1394,9 @@ app.controller("CreateLogController", function ($scope, $rootScope, timesheetSer
     $scope.teamUsers = {};
 
     $scope.createTimelog = function () {
-        timesheetService.writeTimelog($scope.user_id, $scope.timelog_timein, $scope.timelog_timeout,
-                                 localStorage.SESSION_KEY).then(function (data) {
+        timesheetService.writeTimelog($scope.user_id, getUnixSeconds($scope.timelog_timein),
+                                      getUnixSeconds($scope.timelog_timeout),
+                                      localStorage.SESSION_KEY).then(function (data) {
             displayMessage('Timelog created.', 'success');
             $scope.clearFields();
             if ($scope.getLogs) {
@@ -1391,7 +1438,7 @@ app.controller("CreateLogController", function ($scope, $rootScope, timesheetSer
     };
     
     $scope.updateFields = function () {
-        $scope.user_id = this.user_id;
+        $scope.user_id = $("#create-log-userid").val();
         $scope.timelog_timein = $("#create-log-timein").val();
         $scope.timelog_timeout = $("#create-log-timeout").val();
     };
@@ -1399,7 +1446,7 @@ app.controller("CreateLogController", function ($scope, $rootScope, timesheetSer
     $scope.clearFields = function () {
         this.team_number = "";
         $scope.loadTeamMembers();
-        this.user_id = "";
+        $("#create-log-userid").val("");
         $('#create-log-timein').val("");
         $('#create-log-timeout').val("");
         $scope.updateFields();
@@ -1411,7 +1458,7 @@ app.controller("CreateLogController", function ($scope, $rootScope, timesheetSer
         $scope.clearFields();
         this.set_timeout = true;
         $("#create-log-timein, #create-log-timeout").datetimepicker({
-            format: "YYYY-MM-DD HH:mm"
+            format: "YYYY-MM-DD hh:mm A"
         });
         $("#create-log-timein, #create-log-timeout").on("dp.change", $scope.updateFields);
     });

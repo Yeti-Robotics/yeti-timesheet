@@ -320,7 +320,9 @@ function addTimelog($db, $userId, $sessionKey) {
     if (!hasUserMentorRights($db, $userId, $sessionKey)) {
         return false;
     }
-    $query = "SELECT *
+    $query = "SELECT timelog_id, user_id,
+                UNIX_TIMESTAMP(timelog_timein) as timelog_timein,
+                UNIX_TIMESTAMP(timelog_timeout) as timelog_timeout
                 FROM timelog
                 WHERE user_id = ?
                 AND timelog_timeout IS NULL
@@ -341,7 +343,6 @@ function addTimelog($db, $userId, $sessionKey) {
 }
 
 function writeTimelog($db, $userId, $timelogIn, $timelogOut, $sessionKey) {
-    logToFile(LOG_FILE, $userId);
     if (!hasUserMentorRights($db, $userId, $sessionKey)) {
         return false;
     }
@@ -351,7 +352,10 @@ function writeTimelog($db, $userId, $timelogIn, $timelogOut, $sessionKey) {
 }
 
 function getTimelog($db, $timelogId) {
-    $query = "SELECT * FROM timelog WHERE timelog_id = ?";
+    $query = "SELECT timelog_id, user_id,
+                UNIX_TIMESTAMP(timelog_timein) as timelog_timein,
+                UNIX_TIMESTAMP(timelog_timeout) as timelog_timeout
+                FROM timelog WHERE timelog_id = ?";
     $result = executeSelect($db, $query, "i", $timelogId);
     if ($result) {
         while ($row = $result->fetch_assoc()) {

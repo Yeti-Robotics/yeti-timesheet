@@ -732,7 +732,11 @@ app.controller("AdminController", function ($scope, $http, $location, timesheetS
         timesheetService.getTimelog(timelogId, localStorage.SESSION_KEY).then(function (data) {
             $scope.timelog_id = timelogId;
             $scope.timelog_timein = moment(data.timelog.timelog_timein).format(DATETIME_FORMAT);
-            $scope.timelog_timeout = moment(data.timelog.timelog_timeout).format(DATETIME_FORMAT);
+            if (data.timelog.timelog_timeout) {
+                $scope.timelog_timeout = moment(data.timelog.timelog_timeout).format(DATETIME_FORMAT);
+            } else {
+                $scope.timelog_timeout = "";
+            }
             $("#editModal").modal();
             $('#edit-log-timein').val($scope.timelog_timein);
             $('#edit-log-timeout').val($scope.timelog_timeout);
@@ -819,7 +823,11 @@ app.controller("ViewLogsController", function ($scope, $http, $location, timeshe
         timesheetService.getTimelog(timelogId, localStorage.SESSION_KEY).then(function (data) {
             $scope.timelog_id = timelogId;
             $scope.timelog_timein = moment(data.timelog.timelog_timein).format(DATETIME_FORMAT);
-            $scope.timelog_timeout = moment(data.timelog.timelog_timeout).format(DATETIME_FORMAT);
+            if (data.timelog.timelog_timeout) {
+                $scope.timelog_timeout = moment(data.timelog.timelog_timeout).format(DATETIME_FORMAT);
+            } else {
+                $scope.timelog_timeout = "";
+            }
             $("#editModal").modal();
             $('#edit-log-timein').val($scope.timelog_timein);
             $('#edit-log-timeout').val($scope.timelog_timeout);
@@ -1173,8 +1181,14 @@ app.controller("EditLogController", function ($scope, $rootScope, $window, $rout
     var timelogId;
 
     $scope.saveChanges = function () {
+        var timeout;
+        if ($scope.timelog_timeout) {
+            timeout = moment($scope.timelog_timeout, DATETIME_FORMAT).unix();
+        } else {
+            timeout = null;
+        }
         timesheetService.updateTimelog($scope.timelog_id, moment($scope.timelog_timein, DATETIME_FORMAT).unix(),
-                                       moment($scope.timelog_timeout, DATETIME_FORMAT).unix(),
+                                       moment($scope.timelog_timeout, DATETIME_FORMAT).unix() || null,
                                        localStorage.SESSION_KEY).then(function (data) {
             displayMessage("Timelog updated sucessfully.", "success");
             $scope.getLogs();
@@ -1333,7 +1347,7 @@ app.controller("CreateLogController", function ($scope, $rootScope, timesheetSer
 
     $scope.createTimelog = function () {
         timesheetService.writeTimelog($scope.user_id, moment($scope.timelog_timein, DATETIME_FORMAT).unix(),
-                                      moment($scope.timelog_timeout, DATETIME_FORMAT).unix(),
+                                      moment($scope.timelog_timeout, DATETIME_FORMAT).unix() || null,
                                       localStorage.SESSION_KEY).then(function (data) {
             displayMessage('Timelog created.', 'success');
             $scope.clearFields();

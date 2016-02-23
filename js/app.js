@@ -731,9 +731,9 @@ app.controller("AdminController", function ($scope, $http, $location, timesheetS
     $scope.getLogData = function (timelogId) {
         timesheetService.getTimelog(timelogId, localStorage.SESSION_KEY).then(function (data) {
             $scope.timelog_id = timelogId;
-            $scope.timelog_timein = moment(data.timelog.timelog_timein).format(DATETIME_FORMAT);
+            $scope.timelog_timein = moment(data.timelog.timelog_timein * 1000).format(DATETIME_FORMAT);
             if (data.timelog.timelog_timeout) {
-                $scope.timelog_timeout = moment(data.timelog.timelog_timeout).format(DATETIME_FORMAT);
+                $scope.timelog_timeout = moment(data.timelog.timelog_timeout * 1000).format(DATETIME_FORMAT);
             } else {
                 $scope.timelog_timeout = "";
             }
@@ -822,9 +822,9 @@ app.controller("ViewLogsController", function ($scope, $http, $location, timeshe
     $scope.getLogData = function (timelogId) {
         timesheetService.getTimelog(timelogId, localStorage.SESSION_KEY).then(function (data) {
             $scope.timelog_id = timelogId;
-            $scope.timelog_timein = moment(data.timelog.timelog_timein).format(DATETIME_FORMAT);
+            $scope.timelog_timein = moment(data.timelog.timelog_timein * 1000).format(DATETIME_FORMAT);
             if (data.timelog.timelog_timeout) {
-                $scope.timelog_timeout = moment(data.timelog.timelog_timeout).format(DATETIME_FORMAT);
+                $scope.timelog_timeout = moment(data.timelog.timelog_timeout * 1000).format(DATETIME_FORMAT);
             } else {
                 $scope.timelog_timeout = "";
             }

@@ -251,7 +251,7 @@ function getHours($db, $userId, $sessionKey) {
 }
 
 function getHoursInRange($db, $userId, $startSeconds, $endSeconds, $sessionKey) {
-    if (!hasUserMentorRights($db, $userId, $sessionKey)) {
+    if (!hasUserRights($db, $userId, $sessionKey)) {
         return false;
     }
     $query = "SELECT DATE(timelog_timein) as date,
@@ -320,7 +320,9 @@ function addTimelog($db, $userId, $sessionKey) {
     if (!hasUserMentorRights($db, $userId, $sessionKey)) {
         return false;
     }
-    $query = "SELECT *
+    $query = "SELECT timelog_id, user_id,
+                UNIX_TIMESTAMP(timelog_timein) as timelog_timein,
+                UNIX_TIMESTAMP(timelog_timeout) as timelog_timeout
                 FROM timelog
                 WHERE user_id = ?
                 AND timelog_timeout IS NULL
@@ -341,7 +343,6 @@ function addTimelog($db, $userId, $sessionKey) {
 }
 
 function writeTimelog($db, $userId, $timelogIn, $timelogOut, $sessionKey) {
-    logToFile(LOG_FILE, $userId);
     if (!hasUserMentorRights($db, $userId, $sessionKey)) {
         return false;
     }
@@ -351,7 +352,10 @@ function writeTimelog($db, $userId, $timelogIn, $timelogOut, $sessionKey) {
 }
 
 function getTimelog($db, $timelogId) {
-    $query = "SELECT * FROM timelog WHERE timelog_id = ?";
+    $query = "SELECT timelog_id, user_id,
+                UNIX_TIMESTAMP(timelog_timein) as timelog_timein,
+                UNIX_TIMESTAMP(timelog_timeout) as timelog_timeout
+                FROM timelog WHERE timelog_id = ?";
     $result = executeSelect($db, $query, "i", $timelogId);
     if ($result) {
         while ($row = $result->fetch_assoc()) {
@@ -645,19 +649,19 @@ function isMentorToId($db, $userId, $sessionKey) {
 }
 
 function hasTeamMentorRights($db, $teamNumber, $sessionKey) {
-    return isAdmin($db, $sessionKey) || isTeamMentor($db, $teamNumber, $sessionKey);
+    return isTeamMentor($db, $teamNumber, $sessionKey) || isAdmin($db, $sessionKey);
 }
 
 function hasMentorRights($db, $sessionKey) {
-    return isAdmin($db, $sessionKey) || isMentor($db, $sessionKey);
+    return isMentor($db, $sessionKey) || isAdmin($db, $sessionKey);
 }
 
 function hasUserMentorRights($db, $userId, $sessionKey) {
-    return isAdmin($db, $sessionKey) || isMentorToId($db, $userId, $sessionKey);
+    return isMentorToId($db, $userId, $sessionKey) || isAdmin($db, $sessionKey);
 }
 
 function hasUserRights($db, $userId, $sessionKey) {
-    return hasUserMentorRights($db, $userId, $sessionKey) || getCurrentUser($db, $sessionKey) == $userId;
+    return getUserID($db, $sessionKey) == $userId || hasUserMentorRights($db, $userId, $sessionKey);
 }
 
 function logToFile($fileName, $message) {

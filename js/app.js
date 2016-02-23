@@ -1045,19 +1045,20 @@ app.controller("ProfileController", function ($scope, $rootScope, $location, $ro
             timeStart = moment($scope.timeStart).unix();
             timeEnd = $scope.timeEnd;
             if (timeEnd.length < 12) {
-                timeEnd += " 23:59:59";
+                timeEnd = moment(timeEnd).add(1, 'day').unix();
+            } else {
+                timeEnd = moment(timeEnd).unix();
             }
-            timeEnd = moment(timeEnd).unix();
             userService.getHoursInRange($scope.userId, timeStart, timeEnd, localStorage.SESSION_KEY).then(function (data) {
                 var startSeconds, endSeconds, dateDist, hourChartDates, thisDate;
                 hourChartData = [];
                 hourChartDates = [];
-                startSeconds = moment($scope.timeStart).valueOf();
-                endSeconds = moment($scope.timeEnd).valueOf();
+                startSeconds = moment(timeStart * 1000).valueOf();
+                endSeconds = moment(timeEnd * 1000).valueOf();
                 for (i = startSeconds; i < endSeconds; i += 86400000) {
                     hourChartData.push(0);
                     thisDate = moment(i);
-                    hourChartDates.push(moment(i + 86400000).format(DATE_FORMAT));
+                    hourChartDates.push(moment(i).format(DATE_FORMAT));
                 }
                 for (i = 0; i < data.timelog.length; i += 1) {
                     dateDist = moment(data.timelog[i].date).diff($scope.timeStart, 'days');

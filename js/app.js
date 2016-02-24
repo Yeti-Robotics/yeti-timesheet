@@ -1246,8 +1246,8 @@ app.controller("TeamPageController", function ($scope, $rootScope, $routeParams,
     $scope.timeEnd = moment().format(DATE_FORMAT);
 
     // Hour chart
-    function hourChart(data) {
-        $('#hour-chart-container').highcharts({
+    function hourChart(data, userIds) {
+        var chart = $('#hour-chart-container').highcharts({
             chart: {
                 type: 'bar',
                 height: data.length * 25
@@ -1256,7 +1256,13 @@ app.controller("TeamPageController", function ($scope, $rootScope, $routeParams,
                 text: 'Hours Per Member'
             },
             xAxis: {
-                type: 'category'
+                type: 'category',
+                labels: {
+                    formatter: function () {
+                        return "<a href='#/profile/" + userIds[this.value] +  "'>" + this.value + '<a>';
+                    },
+                    useHTML: true
+                }
             },
             yAxis: {
                 min: 0,
@@ -1268,7 +1274,14 @@ app.controller("TeamPageController", function ($scope, $rootScope, $routeParams,
                 enabled: false
             },
             tooltip: {
-                valueSuffix: ' hours'
+                valueSuffix: ' hours',
+                positioner: function (labelWidth, labelHeight, point) {
+                    var posX = point.plotX + labelWidth;
+                    if (posX >= $('#hour-chart-container').width() - labelWidth) {
+                        posX = $('#hour-chart-container').width() - labelWidth;
+                    }
+                    return {x: posX, y: point.plotY};
+                }
             },
             plotOptions: {
                 column: {
@@ -1306,7 +1319,8 @@ app.controller("TeamPageController", function ($scope, $rootScope, $routeParams,
                 timeEnd += " 23:59:59";
             }
             teamService.getTeamTimes($scope.teamNumber, $scope.timeStart, timeEnd, localStorage.SESSION_KEY).then(function (data) {
-                var hourChartData;
+                var hourChartData, userIds;
+                userIds = {};
                 hourChartData = [];
                 $scope.members = [];
                 for (i = 0; i < data.times.length; i += 1) {
@@ -1315,8 +1329,9 @@ app.controller("TeamPageController", function ($scope, $rootScope, $routeParams,
                         y: Math.round(data.times[i].user_time / 36) / 100
                     });
                     $scope.members.push(data.times[i]);
+                    userIds[data.times[i].user_name] = data.times[i].user_id;
                 }
-                hourChart(hourChartData);
+                hourChart(hourChartData, userIds);
             }, function (data) {
                 console.log(data);
             });

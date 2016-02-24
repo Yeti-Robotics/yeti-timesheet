@@ -102,7 +102,7 @@ function getTeamTimes($db, $teamNumber, $timeStart, $timeEnd, $sessionKey) {
     if (!hasMentorRights($db, $sessionKey)) {
         return false;
     }
-    $query = "SELECT user.user_id, user.user_name,
+    $query = "SELECT user.user_id, user.user_name, user.user_mentor,
                 IFNULL(SUM(UNIX_TIMESTAMP(IFNULL(timelog_timeout, NOW())) - UNIX_TIMESTAMP(timelog_timein)),0)
                 AS user_time
                 FROM user

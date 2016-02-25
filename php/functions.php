@@ -517,7 +517,8 @@ function getLoggedInUsers($db, $sessionKey) {
                 JOIN user ON user.user_id = timelog.user_id
                 JOIN team ON user.team_number = team.team_number
                 WHERE timelog_timeout IS NULL
-                ORDER BY (CASE team.team_number WHEN 3506 THEN 0 ELSE team.team_number END) ASC";
+                ORDER BY (CASE team.team_number WHEN 3506 THEN 0 ELSE team.team_number END) ASC,
+                        user_name ASC";
     $result = executeSelect($db, $query);
     if ($result) {
         $users = [];

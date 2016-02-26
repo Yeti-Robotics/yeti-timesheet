@@ -162,7 +162,7 @@ function addUser($db, $userNumber, $userName, $teamNumber, $userEmail, $userPass
         return false;
     }
     $query = "INSERT INTO user (user_id, user_name, team_number, user_email, user_password, user_admin, user_mentor)
-                VALUES (?, ?, ?, ?, ?, ?, ?)";
+                VALUES (?, ?, ?, IFNULL(?, ''), ?, ?, ?)";
     return executeQuery($db, $query, "ssissii",
                         $teamNumber . "-" . $userNumber, $userName, $teamNumber, $userEmail, md5($userPassword), $userAdmin, $userMentor);
 }
@@ -701,13 +701,15 @@ function login($db, $userId, $password) {
     $result = executeSelect($db, $query, "sss", $userId, $userId, $password);
     $success = false;
     $response = [];
+    $usersFound = 0;
     if ($result) {
         while ($row = $result->fetch_assoc()) {
             $response = $row;
-            $success = true;
+            $userId = $row['user_id'];
+            $usersFound += 1;
         }
     }
-    if ($success) {
+    if ($usersFound == 1) {
         $sessionKey = sha1($userId + time());
         $query = "INSERT INTO session (user_id, session_key) VALUES (?, ?)";
         $success = executeQuery($db, $query, "ss", $response["user_id"], $sessionKey);

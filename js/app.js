@@ -12,17 +12,21 @@ function displayMessage(message, alertType) {
 app.run(function ($http, $rootScope, $location, loginService) {
     "use strict";
 
+    // Check whether the user is logged in.
     if (localStorage.getItem("SESSION_KEY")) {
         loginService.validateSession(localStorage.SESSION_KEY).then(function (data) {
             if (!data.user_id) {
+                // If not logged in, remove session key and redirect to default page.
                 localStorage.removeItem("SESSION_KEY");
                 $location.path("/");
             } else {
+                // If logged in, remember who is logged in.
                 $rootScope.user_logged_in = true;
                 $rootScope.user_admin = data.user_admin;
                 $rootScope.mentor_team = parseInt(data.mentor_team, 0);
             }
         }, function (data) {
+            // If an error occurs, log the results and assume the user isn't logged in.
             console.log(data);
             localStorage.removeItem("SESSION_KEY");
             $location.path("/");
@@ -34,6 +38,7 @@ app.service("loginService", function ($http, $q) {
     'use strict';
 
     this.login = function (userId, password) {
+        // Log the user in and retrieve a session key.
         var config, deferred;
         config = {
             method: "POST",
@@ -56,6 +61,7 @@ app.service("loginService", function ($http, $q) {
     };
 
     this.validateSession = function (sessionKey) {
+        // See if the user is logged in.
         var config, deferred;
         config = {
             method: "GET",
@@ -79,6 +85,7 @@ app.service("logoutService", function ($http, $q) {
     'use strict';
 
     this.logout = function (sessionKey) {
+        // Delete the user's session and remove their session key.
         var config, deferred;
         config = {
             method: "POST",
@@ -102,6 +109,7 @@ app.service("timesheetService", function ($http, $q) {
     'use strict';
 
     this.addLog = function (userId, sessionKey) {
+        // Enter a timelog at the current time for a specified user ID.
         var config, deferred;
         config = {
             method: "POST",
@@ -124,6 +132,7 @@ app.service("timesheetService", function ($http, $q) {
     };
 
     this.teamLog = function (teamNumber, sessionKey) {
+        // Set all unfinished timelogs from a team to have time out at the current time.
         var config, deferred;
         config = {
             method: "POST",
@@ -146,6 +155,7 @@ app.service("timesheetService", function ($http, $q) {
     };
 
     this.getTimelog = function (timelogId, sessionKey) {
+        // Retrieve information about a timelog.
         var config, deferred;
         config = {
             method: "GET",
@@ -168,6 +178,7 @@ app.service("timesheetService", function ($http, $q) {
     };
 
     this.getLogs = function (filters, sessionKey) {
+        // Search the database for timelogs.
         var config, deferred;
         config = {
             method: "GET",
@@ -188,6 +199,7 @@ app.service("timesheetService", function ($http, $q) {
     };
 
     this.getLoggedInUsers = function (sessionKey) {
+        // See all the users with unfinished timelogs.
         var config, deferred;
         config = {
             method: "GET",
@@ -207,6 +219,7 @@ app.service("timesheetService", function ($http, $q) {
     };
 
     this.updateTimelog = function (timelogId, timein, timeout, sessionKey) {
+        // Change a timelog's times.
         var config, deferred;
         config = {
             method: "POST",
@@ -231,6 +244,7 @@ app.service("timesheetService", function ($http, $q) {
     };
 
     this.deleteTimelog = function (timelogId, sessionKey) {
+        // Remvoe a timelog from the database.
         var config, deferred;
         config = {
             method: "POST",
@@ -253,6 +267,7 @@ app.service("timesheetService", function ($http, $q) {
     };
     
     this.writeTimelog = function (userId, timein, timeout, sessionKey) {
+        // Add a new timelog with specific time values.
         var config, deferred;
         config = {
             method: "POST",
@@ -281,6 +296,7 @@ app.service("teamService", function ($http, $q) {
     'use strict';
 
     this.addTeam = function (teamName, teamNumber, sessionKey) {
+        // Add a team to the database.
         var config, deferred;
         config = {
             method: "POST",
@@ -304,6 +320,7 @@ app.service("teamService", function ($http, $q) {
     };
 
     this.getTeams = function (sessionKey) {
+        // Retrieve information about all the teams.
         var config, deferred;
         config = {
             method: "GET",
@@ -323,6 +340,7 @@ app.service("teamService", function ($http, $q) {
     };
 
     this.getTeam = function (teamNumber, sessionKey) {
+        // Retrieve information about a team.
         var config, deferred;
         config = {
             method: "GET",
@@ -345,6 +363,7 @@ app.service("teamService", function ($http, $q) {
     };
 
     this.getTeamTimes = function (teamNumber, startSeconds, endSeconds, sessionKey) {
+        // Get the total hours for all members of a team.
         var config, deferred;
         config = {
             method: "GET",
@@ -368,6 +387,7 @@ app.service("teamService", function ($http, $q) {
     };
     
     this.getTeamsAndUsers = function (sessionKey) {
+        // Get all the users organized by team.
         var config, deferred;
         config = {
             method: "GET",
@@ -386,6 +406,7 @@ app.service("teamService", function ($http, $q) {
     };
     
     this.getHoursByTeam = function (startDate, endDate, sessionKey) {
+        // Get total hours per day per team.
         var config, deferred;
         config = {
             method: "GET",
@@ -412,6 +433,7 @@ app.service("userService", function ($http, $q) {
     'use strict';
 
     this.addUser = function (userData, sessionKey) {
+        // Add a user to the database.
         var config, deferred;
         config = {
             method: "POST",
@@ -432,6 +454,7 @@ app.service("userService", function ($http, $q) {
     };
 
     this.getUsers = function (teamNumber, sessionKey) {
+        // Retrieve information about all members of a team.
         var config, deferred;
         config = {
             method: "GET",
@@ -454,6 +477,7 @@ app.service("userService", function ($http, $q) {
     };
 
     this.getUser = function (userId, sessionKey) {
+        // Retrieve information about a user.
         var config, deferred;
         config = {
             method: "GET",
@@ -476,6 +500,7 @@ app.service("userService", function ($http, $q) {
     };
 
     this.getCurrentUser = function (sessionKey) {
+        // Retrieve information about the current user.
         var config, deferred;
         config = {
             method: "GET",
@@ -495,6 +520,7 @@ app.service("userService", function ($http, $q) {
     };
 
     this.getUserTime = function (userId, timeStart, timeEnd, sessionKey) {
+        // Retrieve a user's total hours.
         var config, deferred;
         config = {
             method: "GET",
@@ -519,6 +545,7 @@ app.service("userService", function ($http, $q) {
     };
 
     this.idTaken = function (userId, sessionKey) {
+        // See if there is already a user with a particular user ID.
         var config, deferred;
         config = {
             method: "GET",
@@ -541,6 +568,7 @@ app.service("userService", function ($http, $q) {
     };
 
     this.getHours = function (userId, sessionKey) {
+        // Retrieve hours by day for a user.
         var config, deferred;
         config = {
             method: "GET",
@@ -562,6 +590,7 @@ app.service("userService", function ($http, $q) {
     };
 
     this.getHoursInRange = function (userId, startSeconds, endSeconds, sessionKey) {
+        // Retrive hours by day for a user in a given period.
         var config, deferred;
         config = {
             method: "GET",
@@ -585,6 +614,7 @@ app.service("userService", function ($http, $q) {
     };
     
     this.changePassword = function (passData, sessionKey) {
+        // Change the current user's password.
         var config, deferred;
         config = {
             method: "POST",
@@ -608,9 +638,12 @@ app.service("userService", function ($http, $q) {
 app.controller("LoginController", function ($scope, $http, $location, $rootScope, loginService) {
     "use strict";
 
+    // Try to log in a user
     $scope.login = function () {
+        // If the user doesn't already have a session key, try to log in.
         if (!localStorage.getItem("SESSION_KEY")) {
             loginService.login($scope.user, $scope.user_password).then(function (data) {
+                // If the user logs in successfully, remember who's logged in.
                 localStorage.setItem("SESSION_KEY", data.session_key);
                 $rootScope.user_admin = Boolean(data.user_admin);
                 $rootScope.user_logged_in = true;
@@ -618,12 +651,14 @@ app.controller("LoginController", function ($scope, $http, $location, $rootScope
                 displayMessage('Login successful.', 'success');
                 $location.path("/home");
             }, function (data) {
+                // If the user couldn't log in, log the result.
                 console.log(data);
                 displayMessage('Login failed.', 'danger');
             });
         }
     };
 
+    // If the user is already logged in, redirect to the home page.
     if (localStorage.SESSION_KEY !== undefined) {
         $location.path("/home");
     }
@@ -632,8 +667,10 @@ app.controller("LoginController", function ($scope, $http, $location, $rootScope
 app.controller("LogoutController", function ($scope, $http, $location, $rootScope, logoutService) {
     "use strict";
 
+    // Log the user out.
     if (localStorage.getItem("SESSION_KEY")) {
         logoutService.logout(localStorage.SESSION_KEY).then(function (data) {
+            // Erase data and redirect to login.
             localStorage.SESSION_KEY = undefined;
             localStorage.removeItem("SESSION_KEY");
             $rootScope.user_admin = false;
@@ -642,32 +679,20 @@ app.controller("LogoutController", function ($scope, $http, $location, $rootScop
             displayMessage('Logged out.', 'success');
             $location.path("/");
         }, function (data) {
+            // Log errors and redirect to login.
             console.log(data);
             $location.path("/");
         });
     } else {
+        // Redirect to login.
         $location.path("/");
     }
-});
-
-app.controller("TimesheetController", function ($scope, $http, timesheetService) {
-    "use strict";
-
-    $scope.lastLogged = "";
-
-    $scope.submit = function () {
-        timesheetService.addLog($scope.user_id, localStorage.SESSION_KEY).then(function (data) {
-            $scope.lastLogged = $scope.user_id;
-        }, function (data) {
-            console.log(data);
-            $scope.lastLogged = "";
-        });
-    };
 });
 
 app.controller("AdminController", function ($scope, $http, $location, timesheetService) {
     "use strict";
 
+    // See all timelogs from the past day.
     $scope.getLogs = function () {
         timesheetService.getLogs({
             "time_limit": "day"
@@ -678,6 +703,7 @@ app.controller("AdminController", function ($scope, $http, $location, timesheetS
         });
     };
 
+    // See which users are logged in.
     $scope.getLoggedInUsers = function () {
         var loggedInUsers, i, team, user, index;
         timesheetService.getLoggedInUsers(localStorage.SESSION_KEY).then(function (data) {
@@ -699,6 +725,7 @@ app.controller("AdminController", function ($scope, $http, $location, timesheetS
         });
     };
 
+    // Log a user in or out.
     $scope.submit = function () {
         timesheetService.addLog($scope.user_id, localStorage.SESSION_KEY).then(function (data) {
             displayMessage('Timelog successful.', 'success');
@@ -711,6 +738,7 @@ app.controller("AdminController", function ($scope, $http, $location, timesheetS
         });
     };
 
+    // Retrieve a time string based on unix time in seconds.
     $scope.getTime = function (unixTime) {
         if (typeof (unixTime) !== "number") {
             return "";
@@ -719,15 +747,18 @@ app.controller("AdminController", function ($scope, $http, $location, timesheetS
         return moment(unixTime).format(TIME_FORMAT);
     };
 
+    // Log a user out.
     $scope.logoutUser = function (userId) {
         $scope.user_id = userId;
         $scope.submit();
     };
 
+    // Go to the page to log out an entire team.
     $scope.logoutTeam = function (teamNumber) {
         $location.path("/team_timesheet/" + teamNumber);
     };
     
+    // Load the modal for editing a timelog.
     $scope.getLogData = function (timelogId) {
         timesheetService.getTimelog(timelogId, localStorage.SESSION_KEY).then(function (data) {
             $scope.timelog_id = timelogId;
@@ -752,6 +783,7 @@ app.controller("AdminController", function ($scope, $http, $location, timesheetS
 app.controller("TeamOutController", function ($scope, $http, $location, $routeParams, timesheetService) {
     "use strict";
 
+    // Log out all members of a team.
     $scope.submit = function () {
         timesheetService.teamLog($scope.team_number, localStorage.SESSION_KEY).then(function (data) {
             $scope.lastLogged = $scope.team_number;
@@ -762,6 +794,7 @@ app.controller("TeamOutController", function ($scope, $http, $location, $routePa
         });
     };
 
+    // If a team number is specified in the URL, enter that number by default.
     if ($routeParams.teamNumber) {
         $scope.team_number = $routeParams.teamNumber;
     }
@@ -780,6 +813,7 @@ app.controller("ViewLogsController", function ($scope, $http, $location, timeshe
     $scope.time_start = moment().format(DATE_FORMAT);
     $scope.time_end = moment().format(DATE_FORMAT);
 
+    // Submit search criteria.
     $scope.submit = function () {
         var i;
         $location.$$search = {};
@@ -790,6 +824,7 @@ app.controller("ViewLogsController", function ($scope, $http, $location, timeshe
         }
     };
 
+    // Get time string based on unix time in seconds.
     $scope.getTime = function (unixTime) {
         if (typeof (unixTime) !== "number") {
             return "";
@@ -798,11 +833,13 @@ app.controller("ViewLogsController", function ($scope, $http, $location, timeshe
         return moment(unixTime).format(TIME_FORMAT);
     };
 
+    // Get date string based on unix time in seconds.
     $scope.getDate = function (unixTime) {
         unixTime *= 1000;
         return moment(unixTime).format(DATE_FORMAT);
     };
     
+    // Calculate the difference between seconds and return hours.
     $scope.getHourDifference = function (timeStart, timeEnd) {
         var difference = Math.round((timeEnd - timeStart) / 360) / 10;
         if (difference < 0) {
@@ -811,14 +848,17 @@ app.controller("ViewLogsController", function ($scope, $http, $location, timeshe
         return difference;
     };
 
+    // Go to a specific page of results.
     $scope.goToPage = function (pageNumber) {
         $location.search("page", pageNumber);
     };
 
+    // Go to another page of results based on the current page.
     $scope.movePage = function (displacement) {
         $scope.goToPage(parseInt($location.search().page, 0) + displacement);
     };
     
+    // Show the modal for editing timelogs.
     $scope.getLogData = function (timelogId) {
         timesheetService.getTimelog(timelogId, localStorage.SESSION_KEY).then(function (data) {
             $scope.timelog_id = timelogId;
@@ -836,6 +876,7 @@ app.controller("ViewLogsController", function ($scope, $http, $location, timeshe
         });
     };
     
+    // Find timelgos based on search criteria.
     $scope.getLogs = function () {
         searchData = $location.search();
         for (i = 0; i < filterNames.length; i += 1) {
@@ -871,6 +912,7 @@ app.controller("ViewLogsController", function ($scope, $http, $location, timeshe
         });
     };
     
+    // Update scope variables based on datepickers.
     $scope.updateDateFields = function () {
         $scope.time_start = $("#search-time-start").val();
         $scope.time_end = $("#search-time-end").val();
@@ -887,6 +929,7 @@ app.controller("ViewLogsController", function ($scope, $http, $location, timeshe
 app.controller("AddTeamController", function ($scope, $rootScope, $location, teamService) {
     "use strict";
 
+    // Add a team to the database.
     $scope.submit = function () {
         teamService.addTeam($scope.team_name, $scope.team_number, localStorage.SESSION_KEY).then(function (data) {
             displayMessage("Team added successfully.", "success");
@@ -935,6 +978,7 @@ app.controller("ViewTeamsController", function ($scope, $rootScope, $location, u
         });
     }
     
+    // Get hours data for each team.
     $scope.getHoursByTeam = function () {
         teamService.getHoursByTeam($scope.startDate, $scope.endDate, localStorage.SESSION_KEY).then(function (data) {
             var teams, dates, i, j, currentTeam, item, series;
@@ -973,21 +1017,8 @@ app.controller("ViewTeamsController", function ($scope, $rootScope, $location, u
             console.log(data);
         });
     };
-
-    $scope.members = function (teamNumber) {
-        if ($scope.usersByTeam[teamNumber]) {
-            $scope.usersListed = $scope.usersByTeam[teamNumber];
-        } else {
-            userService.getUsers(teamNumber, localStorage.SESSION_KEY).then(function (data) {
-                $scope.usersListed = data.users;
-                $scope.usersByTeam[teamNumber] = $scope.usersListed;
-                $scope.teamNumber = teamNumber;
-            }, function (data) {
-                console.log(data);
-            });
-        }
-    };
     
+    // Update scope variables based on datepickers.
     $scope.updateRangeFields = function () {
         $scope.startDate = $("#time-start").val();
         $scope.endDate = $("#time-end").val();
@@ -1047,6 +1078,7 @@ app.controller("ProfileController", function ($scope, $rootScope, $location, $ro
         });
     }
     
+    // Give information to the hour chart.
     function loadHourChart() {
         if ($scope.userId && moment($scope.timeEnd).diff($scope.timeStart, 'days') <= 366) {
             var timeStart, timeEnd;
@@ -1081,6 +1113,7 @@ app.controller("ProfileController", function ($scope, $rootScope, $location, $ro
         }
     }
 
+    // Get information about the current user.
     $scope.loadUser = function () {
         userService.getCurrentUser(localStorage.SESSION_KEY).then(function (data) {
             $scope.userData = data.user;
@@ -1092,6 +1125,7 @@ app.controller("ProfileController", function ($scope, $rootScope, $location, $ro
         });
     };
 
+    // Get information about a specific user.
     $scope.loadUserById = function (userId) {
         userService.getUser($scope.userId, localStorage.SESSION_KEY).then(function (data) {
             $scope.userData = data.user;
@@ -1106,6 +1140,7 @@ app.controller("ProfileController", function ($scope, $rootScope, $location, $ro
         });
     };
 
+    // Determine the total time for the user.
     $scope.loadUserTime = function () {
         userService.getUserTime($scope.userId, $scope.timeStart, $scope.timeEnd, localStorage.SESSION_KEY).then(function (data) {
             var totalTime = parseInt(data.time, 0);
@@ -1121,6 +1156,7 @@ app.controller("ProfileController", function ($scope, $rootScope, $location, $ro
         });
     };
     
+    // Update scope variables based on datepickers.
     $scope.updateRangeFields = function () {
         $scope.timeStart = $("#time-start").val();
         $scope.timeEnd = $("#time-end").val();
@@ -1147,6 +1183,7 @@ app.controller("AddUserController", function ($scope, $rootScope, $location, use
     $scope.passMatch = true;
     $scope.idsTaken = [];
 
+    // Add a user to the database.
     $scope.submit = function () {
         userService.addUser($scope.formData, localStorage.SESSION_KEY).then(function (data) {
             displayMessage("User added successfully.", "success");
@@ -1156,15 +1193,18 @@ app.controller("AddUserController", function ($scope, $rootScope, $location, use
         });
     };
 
+    // See if the password confirmation matches the password.
     $scope.doPassesMatch = function () {
         $scope.passMatch = ($scope.formData.user_password === $scope.formData.user_password_confirm)
                             && $scope.formData.user_password_confirm;
     };
 
+    // See if there is already a user on the team with a particular number.
     $scope.isNumTaken = function () {
         $scope.idTaken = $scope.idsTaken.includes($scope.formData.team_number + "-" + $scope.formData.user_number);
     };
 
+    // Load data to be used with isNumTaken.
     userService.getUsers(null, localStorage.SESSION_KEY).then(function (data) {
         var i;
         for (i = 0; i < data.users.length; i += 1) {
@@ -1180,6 +1220,7 @@ app.controller("EditLogController", function ($scope, $rootScope, $window, $rout
 
     var timelogId;
 
+    // Confirm edits done to the timelog.
     $scope.saveChanges = function () {
         var timeout;
         if ($scope.timelog_timeout) {
@@ -1200,6 +1241,7 @@ app.controller("EditLogController", function ($scope, $rootScope, $window, $rout
         });
     };
 
+    // Erase the timelog being edited.
     $scope.deleteLog = function () {
         timesheetService.deleteTimelog($scope.timelog_id, localStorage.SESSION_KEY).then(function (data) {
             displayMessage("Timelog deleted.", "success");
@@ -1212,6 +1254,7 @@ app.controller("EditLogController", function ($scope, $rootScope, $window, $rout
         });
     };
     
+    // Update scope variables based on datepickers.
     $scope.updateEditFields = function () {
         $scope.timelog_timein = $("#edit-log-timein").val();
         $scope.timelog_timeout = $("#edit-log-timeout").val();
@@ -1303,6 +1346,7 @@ app.controller("TeamPageController", function ($scope, $rootScope, $routeParams,
         });
     }
     
+    // Get information about the team.
     function loadTeam() {
         teamService.getTeam($scope.teamNumber, localStorage.SESSION_KEY).then(function (data) {
             $scope.teamData = data.team;
@@ -1312,6 +1356,7 @@ app.controller("TeamPageController", function ($scope, $rootScope, $routeParams,
         });
     }
     
+    // Give information to the hour chart.
     $scope.loadHourChart = function () {
         if ($scope.teamNumber && moment($scope.timeEnd).diff($scope.timeStart, 'days') <= 366) {
             var timeEnd = $scope.timeEnd;
@@ -1338,6 +1383,7 @@ app.controller("TeamPageController", function ($scope, $rootScope, $routeParams,
         }
     };
     
+    // Update scope variables based on datepickers.
     $scope.updateRangeFields = function () {
         $scope.timeStart = $("#time-start").val();
         $scope.timeEnd = $("#time-end").val();
@@ -1360,6 +1406,7 @@ app.controller("CreateLogController", function ($scope, $rootScope, timesheetSer
     $scope.teams = {};
     $scope.teamUsers = {};
 
+    // Put a timelog into the database with the specified data.
     $scope.createTimelog = function () {
         timesheetService.writeTimelog($scope.user_id, moment($scope.timelog_timein, DATETIME_FORMAT).unix(),
                                       moment($scope.timelog_timeout, DATETIME_FORMAT).unix() || null,
@@ -1379,6 +1426,7 @@ app.controller("CreateLogController", function ($scope, $rootScope, timesheetSer
     };
     
     $scope.loadTeams = function () {
+        // Load the teams and their members.
         teamService.getTeamsAndUsers(localStorage.SESSION_KEY).then(function (data) {
             if ($rootScope.user_admin) {
                 $scope.teams = data.teams;
@@ -1391,6 +1439,7 @@ app.controller("CreateLogController", function ($scope, $rootScope, timesheetSer
         });
     };
     
+    // Load the members of the team.
     $scope.loadTeamMembers = function () {
         if ($scope.team_number !== this.team_number) {
             $scope.team_number = this.team_number;
@@ -1404,12 +1453,14 @@ app.controller("CreateLogController", function ($scope, $rootScope, timesheetSer
         }
     };
     
+    // Update scope variables.
     $scope.updateFields = function () {
         $scope.user_id = $("#create-log-userid").val();
         $scope.timelog_timein = $("#create-log-timein").val();
         $scope.timelog_timeout = $("#create-log-timeout").val();
     };
     
+    // Clear data inputs.
     $scope.clearFields = function () {
         this.team_number = "";
         $scope.loadTeamMembers();
@@ -1436,6 +1487,7 @@ app.controller("ChangePasswordController", function ($scope, $rootScope, $locati
     
     $scope.formData = {};
 
+    // Change the user's password.
     $scope.submit = function () {
         userService.changePassword($scope.formData, localStorage.SESSION_KEY).then(function (data) {
             displayMessage("Password changed successfully.", "success");

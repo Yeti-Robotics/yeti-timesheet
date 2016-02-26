@@ -1131,7 +1131,6 @@ app.controller("ProfileController", function ($scope, $rootScope, $location, $ro
             $scope.userData = data.user;
             userService.getCurrentUser(localStorage.SESSION_KEY).then(function (data) {
                 $scope.currentUserId = data.user.user_id;
-                $scope.userId = $scope.currentUserId;
             }, function (data) {
                 console.log(data);
             });

@@ -943,23 +943,25 @@ app.controller("AddTeamController", function ($scope, $rootScope, $location, tea
 app.controller("ViewTeamsController", function ($scope, $rootScope, $location, userService, teamService) {
     "use strict";
     
-    var days, startDate, endDate;
+    var startDate, endDate;
     
-    days = 7;
     $scope.teamsListed = [];
     $scope.usersListed = [];
     $scope.usersByTeam = {};
-    $scope.startDate = moment().subtract(days, 'days').format(DATE_FORMAT);
+    $scope.startDate = moment().subtract(7, 'days').format(DATE_FORMAT);
     $scope.endDate = moment().format(DATE_FORMAT);
     
     // Hour chart
-    function hourChart(data, categories) {
+    function hourChart(data) {
         $('#team-hour-chart-container').highcharts({
             title: {
                 text: 'Team Hours'
             },
             xAxis: {
-                categories: categories
+                type: 'datetime',
+                title: {
+                    text: 'Date'
+                }
             },
             yAxis: {
                 title: {
@@ -972,7 +974,8 @@ app.controller("ViewTeamsController", function ($scope, $rootScope, $location, u
                 }]
             },
             tooltip: {
-                valueSuffix: ' hours'
+                valueSuffix: ' hours',
+                xDateFormat: '%a, %b %e, %Y'
             },
             series: data
         });
@@ -981,7 +984,7 @@ app.controller("ViewTeamsController", function ($scope, $rootScope, $location, u
     // Get hours data for each team.
     $scope.getHoursByTeam = function () {
         teamService.getHoursByTeam($scope.startDate, $scope.endDate, localStorage.SESSION_KEY).then(function (data) {
-            var teams, dates, i, j, currentTeam, item, series;
+            var teams, i, j, currentTeam, item, series;
             teams = [];
             series = [];
             for (i = 0; i < data.hours.length; i += 1) {
@@ -1000,19 +1003,17 @@ app.controller("ViewTeamsController", function ($scope, $rootScope, $location, u
             }
             startDate = moment($scope.startDate);
             endDate = moment($scope.endDate);
-            dates = [];
             for (i = 0; startDate <= endDate; i += 1) {
                 for (j = 0; j < series.length; j += 1) {
                     if (teams[series[j].name].hasOwnProperty(startDate.format(DATE_FORMAT))) {
-                        series[j].data[i] = teams[series[j].name][startDate.format(DATE_FORMAT)].hours;
+                        series[j].data[i] = [startDate.valueOf(), teams[series[j].name][startDate.format(DATE_FORMAT)].hours];
                     } else {
-                        series[j].data[i] = 0;
+                        series[j].data[i] = [startDate.valueOf(), 0];
                     }
                 }
-                dates.push(startDate.format(DATE_FORMAT));
                 startDate = moment(startDate).add(1, 'day');
             }
-            hourChart(series, dates);
+            hourChart(series);
         }, function (data) {
             console.log(data);
         });
@@ -1047,13 +1048,16 @@ app.controller("ProfileController", function ($scope, $rootScope, $location, $ro
     $scope.timeEnd = moment().format(DATE_FORMAT);
 
     // Hour chart
-    function hourChart(data, categories) {
+    function hourChart(data) {
         $('#hour-chart-container').highcharts({
             title: {
                 text: 'Hours By Day'
             },
             xAxis: {
-                categories: categories
+                type: 'datetime',
+                title: {
+                    text: 'Date'
+                }
             },
             yAxis: {
                 title: {
@@ -1066,7 +1070,8 @@ app.controller("ProfileController", function ($scope, $rootScope, $location, $ro
                 }]
             },
             tooltip: {
-                valueSuffix: ' hours'
+                valueSuffix: ' hours',
+                xDateFormat: '%a, %b %e, %Y'
             },
             legend: {
                 enabled: false
@@ -1090,23 +1095,20 @@ app.controller("ProfileController", function ($scope, $rootScope, $location, $ro
                 timeEnd = moment(timeEnd).unix();
             }
             userService.getHoursInRange($scope.userId, timeStart, timeEnd, localStorage.SESSION_KEY).then(function (data) {
-                var startSeconds, endSeconds, dateDist, hourChartDates, thisDate;
+                var startSeconds, endSeconds, dateDist;
                 hourChartData = [];
-                hourChartDates = [];
                 startSeconds = moment(timeStart * 1000).valueOf();
                 endSeconds = moment(timeEnd * 1000).valueOf();
                 for (i = startSeconds; i < endSeconds; i += 86400000) {
-                    hourChartData.push(0);
-                    thisDate = moment(i);
-                    hourChartDates.push(moment(i).format(DATE_FORMAT));
+                    hourChartData.push([i, 0]);
                 }
                 for (i = 0; i < data.timelog.length; i += 1) {
                     dateDist = moment(data.timelog[i].date).diff($scope.timeStart, 'days');
                     if (dateDist < hourChartData.length) {
-                        hourChartData[dateDist] = (parseFloat(data.timelog[i].hours) || 0);
+                        hourChartData[dateDist][1] = (parseFloat(data.timelog[i].hours) || 0);
                     }
                 }
-                hourChart(hourChartData, hourChartDates);
+                hourChart(hourChartData);
             }, function (data) {
                 console.log(data);
             });

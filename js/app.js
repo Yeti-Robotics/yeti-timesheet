@@ -452,6 +452,27 @@ app.service("userService", function ($http, $q) {
         });
         return deferred.promise;
     };
+	
+	this.addGuest = function (guestData, sessionKey) {
+        // Add a guest to the database.
+        var config, deferred;
+        config = {
+            method: "POST",
+            url: location.pathname + "php/addGuest.php",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "Session-Key": sessionKey
+            },
+            data: $.param(guestData)
+        };
+        deferred = $q.defer();
+        $http(config).success(function (data) {
+            deferred.resolve(data);
+        }).error(function (data) {
+            deferred.reject(data);
+        });
+        return deferred.promise;
+    };
 
     this.getUsers = function (teamNumber, sessionKey) {
         // Retrieve information about all members of a team.
@@ -691,13 +712,19 @@ app.controller("LogoutController", function ($scope, $http, $location, $rootScop
 
 app.controller("AdminController", function ($scope, $http, $location, timesheetService) {
     "use strict";
-
+	
     // See all timelogs from the past day.
     $scope.getLogs = function () {
         timesheetService.getLogs({
             "time_limit": "day"
         }, localStorage.SESSION_KEY).then(function (data) {
             $scope.logsListed = data.timelogs;
+			for (var i = 0; i < data.timelogs.length; i++) {
+				if (data.timelogs[i].team_number == 0) {
+					data.timelogs[i].user_id = data.timelogs[i].user_id.slice(2);
+					data.timelogs[i].user_name += " (Guest)";
+				}
+			}
         }, function (data) {
             console.log(data);
         });
@@ -705,12 +732,18 @@ app.controller("AdminController", function ($scope, $http, $location, timesheetS
 
     // See which users are logged in.
     $scope.getLoggedInUsers = function () {
-        var loggedInUsers, i, team, user, index;
+        var loggedInUsers, loggedInGuests, i, team, user, index;
         timesheetService.getLoggedInUsers(localStorage.SESSION_KEY).then(function (data) {
             index = -1;
             loggedInUsers = [];
+            loggedInGuests = [];
             for (i = 0; i < data.users.length; i += 1) {
                 user = data.users[i];
+				if (user.team_number == 0) {
+					user.user_id = user.user_id.slice(2);
+					loggedInGuests.push(user);
+					continue;
+				}
                 if (team !== user.team_number) {
                     index += 1;
                     loggedInUsers.push([user]);
@@ -720,6 +753,7 @@ app.controller("AdminController", function ($scope, $http, $location, timesheetS
                 team = user.team_number;
             }
             $scope.loggedInUsers = loggedInUsers;
+			$scope.loggedInGuests = loggedInGuests;
         }, function (data) {
             console.log(data);
         });
@@ -727,7 +761,7 @@ app.controller("AdminController", function ($scope, $http, $location, timesheetS
 
     // Log a user in or out.
     $scope.submit = function () {
-        timesheetService.addLog($scope.user_id, localStorage.SESSION_KEY).then(function (data) {
+        timesheetService.addLog($scope.user_id.includes("-") ? $scope.user_id : "0-" + $scope.user_id, localStorage.SESSION_KEY).then(function (data) {
             displayMessage('Timelog successful.', 'success');
             $scope.user_id = "";
             $scope.getLogs();
@@ -1499,6 +1533,46 @@ app.controller("ChangePasswordController", function ($scope, $rootScope, $locati
             $location.path("/profile");
         });
     };
+});
+
+app.controller("CreateGuestAccountController", function ($scope, $rootScope, $location, timesheetService, userService, loginService) {
+	$scope.idsTaken = [];
+	$scope.guestInfo = {
+		user_name: "",
+		user_number: null
+	};
+	
+	//Checks whether a guest account with the entered id is taken
+	$scope.isNumTaken = function () {
+		$scope.idTaken = $scope.idsTaken.includes("0-" + $scope.guestInfo.user_number);
+		
+		if ($scope.idTaken) {
+			$("#user_number_form").addClass("has-error");
+		} else {
+			$("#user_number_form").removeClass("has-error");
+		}
+	};
+	
+	//Adds guest account to the database
+	$scope.submit = function () {
+		console.log($scope.guestInfo);
+		userService.addGuest($scope.guestInfo, localStorage.SESSION_KEY).then(function (data) {
+			displayMessage("Guest account created successfully.", "success");
+			$scope.guestInfo.user_name = "";
+			$scope.guestInfo.user_number = null;
+		}, function (data) {
+			console.log(data);
+		});
+	};
+	
+	//Gets the id of all registered users
+	userService.getUsers(null, localStorage.SESSION_KEY).then(function (data) {
+		for (var i = 0; i < data.users.length; i++) {
+			$scope.idsTaken.push(data.users[i].user_id);
+		}
+	}, function (data) {
+		console.log(data);
+	});
 });
 
 app.config(['$routeProvider', function ($routeProvider, $locationProvider) {

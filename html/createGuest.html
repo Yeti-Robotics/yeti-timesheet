@@ -1,0 +1,26 @@
+<div class="modal-dialog" ng-controller="CreateGuestAccountController">
+	<div class="container-fluid modal-content" ng-if="user_admin || mentor_team">
+		<div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h2>Create Guest Account</h2>
+		</div>
+		<div class="modal-body">
+			<form id="createGuestForm">
+				<div class="form-group">
+					<div id="user_number_form" class="form-group">
+						<label for="user_number">User Number:</label>
+						<input class="form-control" id="user_number" ng-model="guestInfo.user_number" ng-change="isNumTaken()" type="number" aria-describedby="user_number_status" required>
+						<label style="color:red" ng-if="idTaken">This ID is taken.</label>
+						<span id="user_number_status" class="sr-only">(error)</span>
+					</div>
+					
+					<label for="user_name">Name:</label>
+					<input class="form-control" id="user_name" ng-model="guestInfo.user_name" type="text" required>
+				</div>
+				<div class="form-group">
+					<button class="btn btn-primary btn-block" type="submit" ng-click="submit()" data-dismiss="modal">Submit</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>

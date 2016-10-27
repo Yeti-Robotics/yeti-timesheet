@@ -176,6 +176,16 @@ function addUser($db, $userNumber, $userName, $teamNumber, $userEmail, $userPass
                         $teamNumber . "-" . $userNumber, $userName, $teamNumber, $userEmail, md5($userPassword), $userAdmin, $userMentor);
 }
 
+// Add a guest to the database.
+function addGuest($db, $userNumber, $userName, $sessionKey) {
+	$guestEmail = "probably@notcomingback.com";
+	$guestPassword = "1";
+    $query = "INSERT INTO user (user_id, user_name, team_number, user_email, user_password, user_admin, user_mentor)
+	VALUES (?, ?, ?, ?, ?, ?, ?)";
+    return executeQuery($db, $query, "ssissii",
+                        "0-" . $userNumber, $userName, 0, $guestEmail, $guestPassword, 0, 0);
+}
+
 // Retrieve information about all members of a team.
 function getUsers($db, $teamNumber, $sessionKey) {
     if (!hasMentorRights($db, $sessionKey)) {

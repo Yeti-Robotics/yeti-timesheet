@@ -610,9 +610,6 @@ function isTeamMentor($db, $teamNumber, $sessionKey) {
             }
         }
     }
-    if (!$isMentor) {
-        logToFile(LOG_FILE, "User is not a mentor for team $teamNumber with session key: $sessionKey");
-    }
     return $isMentor;
 }
 

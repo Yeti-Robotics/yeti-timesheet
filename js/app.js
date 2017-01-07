@@ -720,10 +720,6 @@ app.controller("AdminController", function ($scope, $http, $location, timesheetS
         }, localStorage.SESSION_KEY).then(function (data) {
             $scope.logsListed = data.timelogs;
 			for (var i = 0; i < data.timelogs.length; i++) {
-				if (data.timelogs[i].team_number == 0) {
-					data.timelogs[i].user_id = data.timelogs[i].user_id.slice(2);
-					data.timelogs[i].user_name += " (Guest)";
-				}
 			}
         }, function (data) {
             console.log(data);

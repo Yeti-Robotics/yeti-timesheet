@@ -178,6 +178,10 @@ function addUser($db, $userNumber, $userName, $teamNumber, $userEmail, $userPass
 
 // Add a guest to the database.
 function addGuest($db, $userNumber, $userName, $sessionKey) {
+	if (!getTeam($db, 0, $sessionKey)) {
+		addTeam($db, 0, "Guests", $sessionKey);
+	}
+	
 	$guestEmail = "probably@notcomingback.com";
 	$guestPassword = "1";
     $query = "INSERT INTO user (user_id, user_name, team_number, user_email, user_password, user_admin, user_mentor)

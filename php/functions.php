@@ -629,9 +629,6 @@ function isMentor($db, $sessionKey) {
             }
         }
     }
-    if (!$isMentor) {
-        logToFile(LOG_FILE, "User is not a mentor with session key: $sessionKey");
-    }
     return $isMentor;
 }
 
@@ -649,7 +646,6 @@ function getMentorTeam($db, $sessionKey) {
             return $row["team_number"];
         }
     }
-    logToFile(LOG_FILE, "User is not a mentor with session key: $sessionKey");
     return false;
 }
 

@@ -719,8 +719,6 @@ app.controller("AdminController", function ($scope, $http, $location, timesheetS
             "time_limit": "day"
         }, localStorage.SESSION_KEY).then(function (data) {
             $scope.logsListed = data.timelogs;
-			for (var i = 0; i < data.timelogs.length; i++) {
-			}
         }, function (data) {
             console.log(data);
         });

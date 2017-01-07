@@ -15,6 +15,7 @@ function executeQuery($db, $query, ...$bindParamArgs) {
         }
     } else {
         logToFile(LOG_FILE, "Unable to prepare statement with query: $query");
+        logToFile(LOG_FILE, $db->error);
         return false;
     }
     return true;
@@ -38,6 +39,7 @@ function executeSelect($db, $query, ...$bindParamArgs) {
         }
     } else {
         logToFile(LOG_FILE, "Unable to prepare statement with query: $query");
+        logToFile(LOG_FILE, $db->error);
         return false;
     }
     return false;
@@ -309,13 +311,14 @@ function getHoursByTeam($db, $startDate, $endDate, $sessionKey) {
     if (!hasMentorRights($db, $sessionKey)) {
         return false;
     }
-    $query = "SELECT DATE(timelog_timein) as date, team_number,
-                (SUM(UNIX_TIMESTAMP(IFNULL(timelog_timeout, NOW()))) - SUM(UNIX_TIMESTAMP(timelog_timein))) / 3600 as hours
+    $query = "SELECT DATE(timelog_timein) as date, team.team_number, team.team_name,
+                (SUM(UNIX_TIMESTAMP(IFNULL(timelog.timelog_timeout, NOW()))) - SUM(UNIX_TIMESTAMP(timelog.timelog_timein))) / 3600 as hours
                 FROM timelog
                 JOIN user ON user.user_id = timelog.user_id
-                WHERE DATE(timelog_timein) >= ? AND DATE(timelog_timein) <= ?
-                GROUP BY date, team_number
-                ORDER BY (CASE team_number WHEN 3506 THEN 0 ELSE team_number END) ASC, date ASC";
+                JOIN team ON user.team_number = team.team_number
+                WHERE DATE(timelog.timelog_timein) >= ? AND DATE(timelog.timelog_timein) <= ?
+                GROUP BY date, team.team_number
+                ORDER BY (CASE team.team_number WHEN 3506 THEN 0 ELSE team.team_number END) ASC, date ASC";
     $result = executeSelect($db, $query, "ss", $startDate, $endDate);
     if ($result) {
         $rows = [];

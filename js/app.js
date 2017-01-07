@@ -1026,7 +1026,8 @@ app.controller("ViewTeamsController", function ($scope, $rootScope, $location, u
                     teams[item.team_number] = [];
                     currentTeam = item.team_number;
                     series.push({
-                        name: item.team_number,
+                        name: item.team_number + ' - ' + item.team_name,
+                        team: item.team_number,
                         data: []
                     });
                 }
@@ -1038,8 +1039,8 @@ app.controller("ViewTeamsController", function ($scope, $rootScope, $location, u
             endDate = moment($scope.endDate);
             for (i = 0; startDate <= endDate; i += 1) {
                 for (j = 0; j < series.length; j += 1) {
-                    if (teams[series[j].name].hasOwnProperty(startDate.format(DATE_FORMAT))) {
-                        series[j].data[i] = [startDate.valueOf(), teams[series[j].name][startDate.format(DATE_FORMAT)].hours];
+                    if (teams[series[j].team].hasOwnProperty(startDate.format(DATE_FORMAT))) {
+                        series[j].data[i] = [startDate.valueOf(), teams[series[j].team][startDate.format(DATE_FORMAT)].hours];
                     } else {
                         series[j].data[i] = [startDate.valueOf(), 0];
                     }

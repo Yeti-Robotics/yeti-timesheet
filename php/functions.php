@@ -184,15 +184,11 @@ function addGuest($db, $userName, $sessionKey) {
 		addTeam($db, 0, "Guests", $sessionKey);
 	}
 	
-	$query = "SELECT * FROM user WHERE team_number = 0";
+	$query = "SELECT COUNT(user_name) AS numUsers FROM user WHERE team_number = 0";
 	$result = executeSelect($db, $query);
 	$userNumber;
 	if ($result) {
-        $users = [];
-        while ($row = $result->fetch_assoc()) {
-            $users[] = $row;
-        }
-		$userNumber = count($users) + 1;
+		$userNumber = $result->fetch_assoc()["numUsers"] + 1;
     } else {
         return false;
     }

@@ -179,10 +179,23 @@ function addUser($db, $userNumber, $userName, $teamNumber, $userEmail, $userPass
 }
 
 // Add a guest to the database.
-function addGuest($db, $userNumber, $userName, $sessionKey) {
+function addGuest($db, $userName, $sessionKey) {
 	if (!getTeam($db, 0, $sessionKey)) {
 		addTeam($db, 0, "Guests", $sessionKey);
 	}
+	
+	$query = "SELECT * FROM user WHERE team_number = 0";
+	$result = executeSelect($db, $query);
+	$userNumber;
+	if ($result) {
+        $users = [];
+        while ($row = $result->fetch_assoc()) {
+            $users[] = $row;
+        }
+		$userNumber = count($users) + 1;
+    } else {
+        return false;
+    }
 	
 	$guestEmail = "probably@notcomingback.com";
 	$guestPassword = "1";

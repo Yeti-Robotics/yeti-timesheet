@@ -39,7 +39,7 @@ app.directive('guestAutocomplete', function () {
        restrict: 'E',
        templateUrl: 'html/guest-autocomplete.html',
        controller: 'AdminController'
-   } 
+   }
 });
 
 app.service("loginService", function ($http, $q) {

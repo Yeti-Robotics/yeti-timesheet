@@ -717,6 +717,27 @@ function getCurrentUser($db, $sessionKey) {
     return false;
 }
 
+// Search for guests
+function searchGuests($db, $searchTerm, $sessionKey) {
+    if (!isAdmin($db, $sessionKey)) {
+        return false;
+    }
+    $searchTerm = str_replace("%", "", $searchTerm);
+    $query = "SELECT user_id, user_name, team_number
+                FROM user
+                WHERE team_number = 0
+                AND user_name LIKE CONCAT(?, '%')";
+    $result = executeSelect($db, $query, "s", $searchTerm);
+    if ($result) {
+        $users = [];
+        while ($row = $result->fetch_assoc()) {
+            $users[] = $row;
+        }
+        return $users;
+    }
+    return false;
+}
+
 // Try to log in the current user and return a session key.
 function login($db, $userId, $password) {
     $query = "SELECT user_id, user_admin, (CASE WHEN user_mentor THEN team_number ELSE 0 END) as mentor_team

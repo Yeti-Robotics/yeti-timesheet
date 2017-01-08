@@ -34,6 +34,14 @@ app.run(function ($http, $rootScope, $location, loginService) {
     }
 });
 
+app.directive('guestAutocomplete', function () {
+   return {
+       restrict: 'E',
+       templateUrl: 'html/guest-autocomplete.html',
+       controller: 'AdminController'
+   } 
+});
+
 app.service("loginService", function ($http, $q) {
     'use strict';
 
@@ -473,6 +481,28 @@ app.service("userService", function ($http, $q) {
         });
         return deferred.promise;
     };
+    
+    this.searchGuests = function (searchTerm, sessionKey) {
+        // Add a guest to the database.
+        var config, deferred;
+        config = {
+            method: "GET",
+            url: location.pathname + "php/searchGuests.php",
+            headers: {
+                "Session-Key": sessionKey
+            },
+            params: {
+                searchTerm: searchTerm
+            }
+        };
+        deferred = $q.defer();
+        $http(config).success(function (data) {
+            deferred.resolve(data);
+        }).error(function (data) {
+            deferred.reject(data);
+        });
+        return deferred.promise;
+    };
 
     this.getUsers = function (teamNumber, sessionKey) {
         // Retrieve information about all members of a team.
@@ -710,7 +740,7 @@ app.controller("LogoutController", function ($scope, $http, $location, $rootScop
     }
 });
 
-app.controller("AdminController", function ($scope, $http, $location, timesheetService) {
+app.controller("AdminController", function ($scope, $http, $location, timesheetService, userService) {
     "use strict";
 	
     // See all timelogs from the past day.
@@ -769,6 +799,7 @@ app.controller("AdminController", function ($scope, $http, $location, timesheetS
             displayMessage('Timelog failed.', 'danger');
             $scope.user_id = "";
         });
+        $scope.searchedGuests = undefined;
     };
 
     // Retrieve a time string based on unix time in seconds.
@@ -807,6 +838,26 @@ app.controller("AdminController", function ($scope, $http, $location, timesheetS
         }, function (data) {
             console.log(data);
         });
+    };
+    
+    $scope.searchGuests = function () {
+        if ($scope.user_id != undefined && /^[0-9-]+$/.test($scope.user_id) == false
+           && $scope.user_id.length > 2) {
+            userService.searchGuests($scope.user_id, localStorage.SESSION_KEY).then(function (data) {
+                $scope.searchedGuests = data.users;
+                console.log(data);
+            }, function (data) {
+                console.log(data);
+            });
+        } else {
+            $scope.searchedGuests = undefined;
+        }
+    };
+    
+    $scope.updateUserId = function (userId) {
+        $scope.user_id = userId;
+        $scope.searchedGuests = undefined;
+        $('#user_id').focus();
     };
 
     $scope.getLogs();

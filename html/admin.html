@@ -6,7 +6,8 @@
                 <form ng-submit="submit()">
                     <div class="form-group">
                         <label>User ID:</label>
-                        <input class="form-control" type="text" placeholder="Enter your user ID." ng-model="user_id" required/>
+                        <input id="user_id" class="form-control" type="text" placeholder="Enter your user ID or guest name" ng-model="user_id" ng-change="searchGuests()" required/>
+                        <guest-autocomplete></guest-autocomplete>
                     </div>
                     <button class="btn btn-block btn-primary" type="submit">Submit</button>
                 </form>
@@ -15,9 +16,6 @@
         
         <div class="form-group">
             <button class="btn btn-xs" type="button" data-toggle="modal" data-target="#createModal">Manual Time Input</button>
-        </div>
-        
-        <div class="form-group">
             <button class="btn btn-xs" type="button" data-toggle="modal" data-target="#createGuestAccount">Create Guest Account</button>
         </div>
         

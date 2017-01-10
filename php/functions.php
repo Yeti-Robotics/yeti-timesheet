@@ -193,7 +193,7 @@ function addGuest($db, $userName, $sessionKey) {
         return false;
     }
 	
-	$guestEmail = "probably@notcomingback.com";
+	$guestEmail = "guest@yetirobotics.com";
 	$guestPassword = "1";
     $query = "INSERT INTO user (user_id, user_name, team_number, user_email, user_password, user_admin, user_mentor)
 	VALUES (?, ?, ?, ?, ?, ?, ?)";

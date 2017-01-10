@@ -37,8 +37,7 @@ app.run(function ($http, $rootScope, $location, loginService) {
 app.directive('guestAutocomplete', function () {
    return {
        restrict: 'E',
-       templateUrl: 'html/guest-autocomplete.html',
-       controller: 'AdminController'
+       templateUrl: 'html/guest-autocomplete.html'
    }
 });
 
@@ -740,7 +739,7 @@ app.controller("LogoutController", function ($scope, $http, $location, $rootScop
     }
 });
 
-app.controller("AdminController", function ($scope, $http, $location, timesheetService, userService) {
+app.controller("AdminController", function ($scope, $rootScope, $http, $location, timesheetService, userService) {
     "use strict";
 	
     // See all timelogs from the past day.
@@ -845,7 +844,6 @@ app.controller("AdminController", function ($scope, $http, $location, timesheetS
            && $scope.user_id.length > 2) {
             userService.searchGuests($scope.user_id, localStorage.SESSION_KEY).then(function (data) {
                 $scope.searchedGuests = data.users;
-                console.log(data);
             }, function (data) {
                 console.log(data);
             });
@@ -853,6 +851,10 @@ app.controller("AdminController", function ($scope, $http, $location, timesheetS
             $scope.searchedGuests = undefined;
         }
     };
+    
+    $rootScope.$on("SetGuestId", function(name, data) {
+        $scope.updateUserId(data.userId);
+    });
     
     $scope.updateUserId = function (userId) {
         $scope.user_id = userId;
@@ -1173,12 +1175,7 @@ app.controller("ProfileController", function ($scope, $rootScope, $location, $ro
         if ($scope.userId && moment($scope.timeEnd).diff($scope.timeStart, 'days') <= 366) {
             var timeStart, timeEnd;
             timeStart = moment($scope.timeStart).unix();
-            timeEnd = $scope.timeEnd;
-            if (timeEnd.length < 12) {
-                timeEnd = moment(timeEnd).add(1, 'day').unix();
-            } else {
-                timeEnd = moment(timeEnd).unix();
-            }
+            timeEnd = moment($scope.timeEnd).endOf('day').unix();
             userService.getHoursInRange($scope.userId, timeStart, timeEnd, localStorage.SESSION_KEY).then(function (data) {
                 var startSeconds, endSeconds, dateDist;
                 hourChartData = [];
@@ -1228,7 +1225,10 @@ app.controller("ProfileController", function ($scope, $rootScope, $location, $ro
 
     // Determine the total time for the user.
     $scope.loadUserTime = function () {
-        userService.getUserTime($scope.userId, $scope.timeStart, $scope.timeEnd, localStorage.SESSION_KEY).then(function (data) {
+        var timeStart, timeEnd;
+        timeStart = $scope.timeStart;
+        timeEnd = moment($scope.timeEnd).add(1, 'day').format('YYYY-MM-DD');
+        userService.getUserTime($scope.userId, timeStart, timeEnd, localStorage.SESSION_KEY).then(function (data) {
             var totalTime = parseInt(data.time, 0);
             $scope.userTime.totalSeconds = totalTime;
             $scope.userTime.hours = Math.floor(totalTime / 3600);
@@ -1379,7 +1379,7 @@ app.controller("TeamPageController", function ($scope, $rootScope, $routeParams,
         var chart = $('#hour-chart-container').highcharts({
             chart: {
                 type: 'bar',
-                height: data.length * 25
+                height: Math.max(200, data.length * 25)
             },
             title: {
                 text: 'Hours Per Member'
@@ -1586,22 +1586,10 @@ app.controller("ChangePasswordController", function ($scope, $rootScope, $locati
     };
 });
 
-app.controller("CreateGuestAccountController", function ($scope, $rootScope, $location, timesheetService, userService, loginService) {
-	$scope.idsTaken = [];
+app.controller("CreateGuestAccountController", function ($scope, $rootScope, $location, timesheetService, userService) {
 	$scope.guestInfo = {
 		user_name: "",
 		user_number: null
-	};
-	
-	//Checks whether a guest account with the entered id is taken
-	$scope.isNumTaken = function () {
-		$scope.idTaken = $scope.idsTaken.includes("0-" + $scope.guestInfo.user_number);
-		
-		if ($scope.idTaken) {
-			$("#user_number_form").addClass("has-error");
-		} else {
-			$("#user_number_form").removeClass("has-error");
-		}
 	};
 	
 	//Adds guest account to the database
@@ -1616,14 +1604,26 @@ app.controller("CreateGuestAccountController", function ($scope, $rootScope, $lo
 		});
 	};
 	
-	//Gets the id of all registered users
-	userService.getUsers(null, localStorage.SESSION_KEY).then(function (data) {
-		for (var i = 0; i < data.users.length; i++) {
-			$scope.idsTaken.push(data.users[i].user_id);
-		}
-	}, function (data) {
-		console.log(data);
-	});
+    $scope.searchGuests = function () {
+        if ($scope.guestInfo.user_name != undefined && /^[0-9-]+$/.test($scope.guestInfo.user_name) == false
+           && $scope.guestInfo.user_name.length > 2) {
+            userService.searchGuests($scope.guestInfo.user_name, localStorage.SESSION_KEY).then(function (data) {
+                $scope.searchedGuests = data.users;
+            }, function (data) {
+                console.log(data);
+            });
+        } else {
+            $scope.searchedGuests = undefined;
+        }
+    };
+    
+    $scope.updateUserId = function (userId) {
+        $('#createGuestAccount').modal('hide');
+        $rootScope.$emit("SetGuestId", {userId: userId});
+        $scope.searchedGuests = undefined;
+        $scope.guestInfo.user_name = "";
+        $scope.guestInfo.user_number = null;
+    };
 });
 
 app.config(['$routeProvider', function ($routeProvider, $locationProvider) {

@@ -1593,15 +1593,18 @@ app.controller("CreateGuestAccountController", function ($scope, $rootScope, $lo
 	};
 	
 	//Adds guest account to the database
-	$scope.submit = function () {
+	$scope.submit = function (isValid) {
 		console.log($scope.guestInfo);
-		userService.addGuest($scope.guestInfo, localStorage.SESSION_KEY).then(function (data) {
-			displayMessage("Guest account created successfully.", "success");
-			$scope.guestInfo.user_name = "";
-			$scope.guestInfo.user_number = null;
-		}, function (data) {
-			console.log(data);
-		});
+		if (isValid) {
+			$("#createGuestAccount").modal("hide");
+			userService.addGuest($scope.guestInfo, localStorage.SESSION_KEY).then(function (data) {
+				displayMessage("Guest account created successfully.", "success");
+				$scope.guestInfo.user_name = "";
+				$scope.guestInfo.user_number = null;
+			}, function (data) {
+				console.log(data);
+			});
+		}
 	};
 	
     $scope.searchGuests = function () {

@@ -6,7 +6,8 @@
                 <form ng-submit="submit()">
                     <div class="form-group">
                         <label>User ID:</label>
-                        <input class="form-control" type="text" placeholder="Enter your user ID." ng-model="user_id" required/>
+                        <input id="user_id" class="form-control" type="text" placeholder="Enter your user ID or guest name" ng-model="user_id" ng-change="searchGuests()" required/>
+                        <guest-autocomplete></guest-autocomplete>
                     </div>
                     <button class="btn btn-block btn-primary" type="submit">Submit</button>
                 </form>
@@ -15,11 +16,12 @@
         
         <div class="form-group">
             <button class="btn btn-xs" type="button" data-toggle="modal" data-target="#createModal">Manual Time Input</button>
+            <button class="btn btn-xs" type="button" data-toggle="modal" data-target="#createGuestAccount">Create Guest Account</button>
         </div>
         
         <div class="user-label-container">
             <div class="section-title">Currently Logged In</div>
-            <div class = "team-container" ng-repeat="team in loggedInUsers track by $index">
+            <div class="team-container" ng-repeat="team in loggedInUsers track by $index">
                 <div class="team">
                     <a ng-href="#/team/{{team[0].team_number}}" ng-if="user_admin || mentor_team === team[0].team_number">{{team[0].team_number}} - {{team[0].team_name}}</a>
                     <span ng-if="!(user_admin || mentor_team === team[0].team_number)">{{team[0].team_number}} - {{team[0].team_name}}</span>
@@ -31,6 +33,18 @@
                     <span class="glyphicon glyphicon-remove close-icon" ng-click="logoutUser(user.user_id)" title="Log out {{user.user_name}}" ng-if="user_admin || mentor_team === team[0].team_number"></span>
                 </span>
             </div>
+			<div class="team-container">
+				<div class="team">
+					<a href="#/team/0" ng-if="user_admin || mentor_team === 0">Guests</a>
+					<span ng-if="!(user_admin || mentor_team === 0)">Guests</span>
+					<span class="glyphicon glyphicon-remove-circle close-icon" ng-click="logoutTeam(0)" title="Log out all guests" ng-if="user_admin || mentor_team === 0"></span>
+				</div>
+				<span class="label" ng-class-even="'label-primary'" ng-class-odd="'label-info'" ng-repeat="user in loggedInGuests track by $index">
+					<a ng-href="#/profile/0-{{ user.user_id }}" ng-if="user_admin || mentor_team === 0">{{user.user_name}}</a>
+					<span ng-if="!(user_admin || mentor_team === 0)">{{ user.user_name }}</span>
+					<span class="glyphicon glyphicon-remove close-icon" ng-click="logoutUser(user.user_id)" title="Log out {{user.user_name}}" ng-if="user_admin || mentor_team === 0"></span>
+				</span>
+			</div>
         </div>
         
         <div class="section-title">Timelogs Today</div>
@@ -57,6 +71,9 @@
         </div>
         <div id="editModal" class="modal fade" role="dialog">
             <div ng-include="'html/editLog.html'"></div>
+        </div>
+        <div id="createGuestAccount" class="modal fade" role="dialog">
+        	<div ng-include="'html/createGuest.html'"></div>
         </div>
     </div>
 </div>

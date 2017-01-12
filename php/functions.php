@@ -15,6 +15,7 @@ function executeQuery($db, $query, ...$bindParamArgs) {
         }
     } else {
         logToFile(LOG_FILE, "Unable to prepare statement with query: $query");
+        logToFile(LOG_FILE, $db->error);
         return false;
     }
     return true;
@@ -38,6 +39,7 @@ function executeSelect($db, $query, ...$bindParamArgs) {
         }
     } else {
         logToFile(LOG_FILE, "Unable to prepare statement with query: $query");
+        logToFile(LOG_FILE, $db->error);
         return false;
     }
     return false;
@@ -176,6 +178,29 @@ function addUser($db, $userNumber, $userName, $teamNumber, $userEmail, $userPass
                         $teamNumber . "-" . $userNumber, $userName, $teamNumber, $userEmail, md5($userPassword), $userAdmin, $userMentor);
 }
 
+// Add a guest to the database.
+function addGuest($db, $userName, $sessionKey) {
+	if (!getTeam($db, 0, $sessionKey)) {
+		addTeam($db, 0, "Guests", $sessionKey);
+	}
+	
+	$query = "SELECT COUNT(user_name) AS numUsers FROM user WHERE team_number = 0";
+	$result = executeSelect($db, $query);
+	$userNumber;
+	if ($result) {
+		$userNumber = $result->fetch_assoc()["numUsers"] + 1;
+    } else {
+        return false;
+    }
+	
+	$guestEmail = "guest@yetirobotics.com";
+	$guestPassword = "1";
+    $query = "INSERT INTO user (user_id, user_name, team_number, user_email, user_password, user_admin, user_mentor)
+	VALUES (?, ?, ?, ?, ?, ?, ?)";
+    return executeQuery($db, $query, "ssissii",
+                        "0-" . $userNumber, $userName, 0, $guestEmail, $guestPassword, 0, 0);
+}
+
 // Retrieve information about all members of a team.
 function getUsers($db, $teamNumber, $sessionKey) {
     if (!hasMentorRights($db, $sessionKey)) {
@@ -295,13 +320,14 @@ function getHoursByTeam($db, $startDate, $endDate, $sessionKey) {
     if (!hasMentorRights($db, $sessionKey)) {
         return false;
     }
-    $query = "SELECT DATE(timelog_timein) as date, team_number,
-                (SUM(UNIX_TIMESTAMP(IFNULL(timelog_timeout, NOW()))) - SUM(UNIX_TIMESTAMP(timelog_timein))) / 3600 as hours
+    $query = "SELECT DATE(timelog_timein) as date, team.team_number, team.team_name,
+                (SUM(UNIX_TIMESTAMP(IFNULL(timelog.timelog_timeout, NOW()))) - SUM(UNIX_TIMESTAMP(timelog.timelog_timein))) / 3600 as hours
                 FROM timelog
                 JOIN user ON user.user_id = timelog.user_id
-                WHERE DATE(timelog_timein) >= ? AND DATE(timelog_timein) <= ?
-                GROUP BY date, team_number
-                ORDER BY (CASE team_number WHEN 3506 THEN 0 ELSE team_number END) ASC, date ASC";
+                JOIN team ON user.team_number = team.team_number
+                WHERE DATE(timelog.timelog_timein) >= ? AND DATE(timelog.timelog_timein) <= ?
+                GROUP BY date, team.team_number
+                ORDER BY (CASE team.team_number WHEN 3506 THEN 0 ELSE team.team_number END) ASC, date ASC";
     $result = executeSelect($db, $query, "ss", $startDate, $endDate);
     if ($result) {
         $rows = [];
@@ -593,9 +619,6 @@ function isTeamMentor($db, $teamNumber, $sessionKey) {
             }
         }
     }
-    if (!$isMentor) {
-        logToFile(LOG_FILE, "User is not a mentor for team $teamNumber with session key: $sessionKey");
-    }
     return $isMentor;
 }
 
@@ -615,9 +638,6 @@ function isMentor($db, $sessionKey) {
             }
         }
     }
-    if (!$isMentor) {
-        logToFile(LOG_FILE, "User is not a mentor with session key: $sessionKey");
-    }
     return $isMentor;
 }
 
@@ -635,7 +655,6 @@ function getMentorTeam($db, $sessionKey) {
             return $row["team_number"];
         }
     }
-    logToFile(LOG_FILE, "User is not a mentor with session key: $sessionKey");
     return false;
 }
 
@@ -703,6 +722,27 @@ function getCurrentUser($db, $sessionKey) {
         while ($row = $result->fetch_assoc()) {
             return $row;
         }
+    }
+    return false;
+}
+
+// Search for guests
+function searchGuests($db, $searchTerm, $sessionKey) {
+    if (!isAdmin($db, $sessionKey)) {
+        return false;
+    }
+    $searchTerm = str_replace("%", "", $searchTerm);
+    $query = "SELECT user_id, user_name, team_number
+                FROM user
+                WHERE team_number = 0
+                AND user_name LIKE CONCAT(?, '%')";
+    $result = executeSelect($db, $query, "s", $searchTerm);
+    if ($result) {
+        $users = [];
+        while ($row = $result->fetch_assoc()) {
+            $users[] = $row;
+        }
+        return $users;
     }
     return false;
 }

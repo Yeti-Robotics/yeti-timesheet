@@ -5,7 +5,8 @@ DELETE FROM team;
 INSERT INTO team (team_number,team_name) VALUES
 ("3506","Yeti Robotics"),
 ("4540","Neque Inc."),
-("8526","Risus Corp.");
+("8526","Risus Corp."),
+("0", "Guests");
 
 /*Add users*/
 INSERT INTO user (user_id,user_name,team_number,user_email,user_password,user_admin) VALUES

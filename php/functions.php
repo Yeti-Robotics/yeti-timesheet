@@ -327,7 +327,7 @@ function getHoursByTeam($db, $startDate, $endDate, $sessionKey) {
                 JOIN team ON user.team_number = team.team_number
                 WHERE DATE(timelog.timelog_timein) >= ? AND DATE(timelog.timelog_timein) <= ?
                 GROUP BY date, team.team_number
-                ORDER BY (CASE team.team_number WHEN 3506 THEN 0 ELSE team.team_number END) ASC, date ASC";
+                ORDER BY (CASE team.team_number WHEN 3506 THEN -1 ELSE team.team_number END) ASC, date ASC";
     $result = executeSelect($db, $query, "ss", $startDate, $endDate);
     if ($result) {
         $rows = [];

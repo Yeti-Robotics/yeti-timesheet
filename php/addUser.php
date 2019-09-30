@@ -19,7 +19,7 @@ if (isset($_POST["user_name"]) && isset($_POST["team_number"])
             $userEmail = $_POST["user_email"];
         }
         $success = addUser($db, $_POST["user_number"], $_POST["user_name"], $_POST["team_number"],
-                           $userEmail, $_POST["user_password"], 0, isset($_POST["user_mentor"]),
+                           $userEmail, $_POST["user_password"], isset($_POST["user_mentor"]), 0,
                             getSessionKey());
         if ($success) {
             http_response_code(201);

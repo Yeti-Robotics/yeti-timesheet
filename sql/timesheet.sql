@@ -31,7 +31,8 @@ USE `timesheet`;
 DROP TABLE IF EXISTS `session`;
 CREATE TABLE `session` (
   `session_id` int(11) NOT NULL,
-  `user_id` varchar(20) NOT NULL,
+  `user_id` int(20) NOT NULL,
+#   `user_id` varchar(20) NOT NULL,
   `session_key` varchar(64) NOT NULL,
   `session_timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
@@ -57,7 +58,8 @@ CREATE TABLE `team` (
 DROP TABLE IF EXISTS `timelog`;
 CREATE TABLE `timelog` (
   `timelog_id` int(11) NOT NULL,
-  `user_id` varchar(20) NOT NULL,
+  `user_id` int(20) NOT NULL,
+#   `user_id` varchar(20) NOT NULL,
   `timelog_timein` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `timelog_timeout` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
@@ -70,7 +72,8 @@ CREATE TABLE `timelog` (
 
 DROP TABLE IF EXISTS `user`;
 CREATE TABLE `user` (
-  `user_id` varchar(20) NOT NULL,
+  `user_id` int(20) NOT NULL,
+#   `user_id` varchar(20) NOT NULL,
   `user_name` varchar(200) NOT NULL,
   `team_number` int(11) NOT NULL,
   `user_email` varchar(200) NOT NULL,
@@ -120,6 +123,11 @@ ALTER TABLE `user`
 -- AUTO_INCREMENT for dumped tables
 --
 
+--
+-- AUTO_INCREMENT for table `user`
+--
+ALTER TABLE `user`
+  MODIFY `user_id` int(20) NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `session`
 --

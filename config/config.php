@@ -2,7 +2,8 @@
 // database connection variables
 $dbserver = "localhost";
 $dbuser = "root";
-$dbpassword = "";
+$dbpassword = "password";
 $dbname = "timesheet";
+date_default_timezone_set('UTC');
 
 ?>

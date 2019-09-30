@@ -174,45 +174,17 @@ function addUser($db, $userNumber, $userName, $teamNumber, $userEmail, $userPass
     }
     $query = "INSERT INTO user (user_id, user_name, team_number, user_email, user_password, user_admin, user_mentor)
                 VALUES (?, ?, ?, IFNULL(?, ''), ?, ?, ?)";
-    return executeQuery($db, $query, "ssissii",
-                        $teamNumber . "-" . $userNumber, $userName, $teamNumber, $userEmail, md5($userPassword), $userAdmin, $userMentor);
-}
-
-// Add a guest to the database.
-function addGuest($db, $userName, $sessionKey) {
-	if (!getTeam($db, 0, $sessionKey)) {
-		addTeam($db, 0, "Guests", $sessionKey);
-	}
-	
-	$query = "SELECT COUNT(user_name) AS numUsers FROM user WHERE team_number = 0";
-	$result = executeSelect($db, $query);
-	$userNumber;
-	if ($result) {
-		$userNumber = $result->fetch_assoc()["numUsers"] + 1;
-    } else {
-        return false;
-    }
-	
-	$guestEmail = "guest@yetirobotics.com";
-	$guestPassword = "1";
-    $query = "INSERT INTO user (user_id, user_name, team_number, user_email, user_password, user_admin, user_mentor)
-	VALUES (?, ?, ?, ?, ?, ?, ?)";
-    return executeQuery($db, $query, "ssissii",
-                        "0-" . $userNumber, $userName, 0, $guestEmail, $guestPassword, 0, 0);
+    return executeQuery($db, $query, "isissii",
+                        $userNumber, $userName, $teamNumber, $userEmail, md5($userPassword), $userAdmin, $userMentor);
 }
 
 // Retrieve information about all members of a team.
-function getUsers($db, $teamNumber, $sessionKey) {
+function getUsers($db, $sessionKey) {
     if (!hasMentorRights($db, $sessionKey)) {
         return false;
     }
     $query = "SELECT * FROM user";
-    $result = null;
-    if ($teamNumber != null) {
-        $result = executeSelect($db, $query . " WHERE team_number = ?", "i", $teamNumber);
-    } else {
-        $result = executeSelect($db, $query);
-    }
+    $result = executeSelect($db, $query);
     if ($result) {
         $users = [];
         while ($row = $result->fetch_assoc()) {
@@ -722,27 +694,6 @@ function getCurrentUser($db, $sessionKey) {
         while ($row = $result->fetch_assoc()) {
             return $row;
         }
-    }
-    return false;
-}
-
-// Search for guests
-function searchGuests($db, $searchTerm, $sessionKey) {
-    if (!isAdmin($db, $sessionKey)) {
-        return false;
-    }
-    $searchTerm = str_replace("%", "", $searchTerm);
-    $query = "SELECT user_id, user_name, team_number
-                FROM user
-                WHERE team_number = 0
-                AND user_name LIKE CONCAT(?, '%')";
-    $result = executeSelect($db, $query, "s", $searchTerm);
-    if ($result) {
-        $users = [];
-        while ($row = $result->fetch_assoc()) {
-            $users[] = $row;
-        }
-        return $users;
     }
     return false;
 }

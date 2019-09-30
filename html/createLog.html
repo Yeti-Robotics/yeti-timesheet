@@ -7,14 +7,9 @@
         <div class="modal-body">
             <form id="add_user_form">
                 <div class="form-group">
-                    <label>Team:</label>
-                    <select class="form-control" ng-model="team_number" ng-change="loadTeamMembers()">
-                        <option></option>
-                        <option ng-repeat="(team_number, team) in teams" value="{{team_number}}">{{team_number}} {{team.team_name}}</option>
-                    </select>
                     <label>User:</label>
                     <select id="create-log-userid" class="form-control" ng-model="user_id" ng-change="updateFields()">
-                        <option ng-repeat="(user_id, user) in teamUsers" value="{{user_id}}">{{user_id.split("-")[1]}} {{user.user_name}}</option>
+                        <option ng-repeat="user in teamUsers" value="{{user.user_id}}">{{user.user_id}} - {{user.user_name}}</option>
                     </select>
                 </div>
                 <div class="form-group">

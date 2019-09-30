@@ -45,15 +45,3 @@
 .label a {
     color: white !important;
 }
-
-.guest-autocomplete-container {
-    min-height: 25px;
-    margin-top: 2px;
-}
-
-.guest-autocomplete-container .label {
-    display: inline-block;
-    margin: 2px;
-    font-size: 14px;
-    cursor: pointer;
-}

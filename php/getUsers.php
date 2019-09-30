@@ -6,11 +6,7 @@ include("functions.php");
 header("Content-Type: application/json");
 
 $response = [];
-$teamNumber = null;
-if (isset($_GET['team_number'])) {
-    $teamNumber = $_GET['team_number'];
-}
-$users = getUsers($db, $teamNumber, getSessionKey());
+$users = getUsers($db, getSessionKey());
 if(is_array($users)) {
     $response['users'] = $users;
 } else {

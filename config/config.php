@@ -1,6 +1,6 @@
 <?php
 // database connection variables
-$dbserver = "localhost";
+$dbserver = "scouting-db";
 $dbuser = "root";
 $dbpassword = "password";
 $dbname = "timesheet";

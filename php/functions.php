@@ -168,14 +168,14 @@ function getTeamsAndUsers($db, $sessionKey) {
 }
 
 // Add a user to the database.
-function addUser($db, $userNumber, $userName, $teamNumber, $userEmail, $userPassword, $userAdmin, $userMentor, $sessionKey) {
-    if (!hasTeamMentorRights($db, $teamNumber, $sessionKey)) {
+function addUser($db, $userNumber, $userName, $userEmail, $userPassword, $userAdmin, $userMentor, $sessionKey) {
+    if (!isAdmin($db, $sessionKey)) {
         return false;
     }
-    $query = "INSERT INTO user (user_id, user_name, team_number, user_email, user_password, user_admin, user_mentor)
-                VALUES (?, ?, ?, IFNULL(?, ''), ?, ?, ?)";
-    return executeQuery($db, $query, "isissii",
-                        $userNumber, $userName, $teamNumber, $userEmail, md5($userPassword), $userAdmin, $userMentor);
+    $query = "INSERT INTO user (user_id, user_name, user_email, user_password, user_admin, user_mentor)
+                VALUES (?, ?, IFNULL(?, ''), ?, ?, ?)";
+    return executeQuery($db, $query, "isssii",
+                        $userNumber, $userName, $userEmail, md5($userPassword), $userAdmin, $userMentor);
 }
 
 // Retrieve information about all members of a team.
@@ -402,7 +402,7 @@ function getTimelogs($db, $filters, $sessionKey) {
                 WHERE timelog.user_id IN
                 (SELECT user_id FROM user
                 WHERE team_number in
-                (SELECT team_number FROM team";
+                (SELECT team_number FROM team))";
     $foundFilter = false;
     for ($j = 0; $j < 2; $j++) {
         for ($i = $j*2; $i < ($j+1)*2; $i++) {

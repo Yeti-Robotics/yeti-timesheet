@@ -7,7 +7,7 @@ header("Content-Type: application/json");
 
 $response = [];
 
-if (isset($_POST["user_name"]) && isset($_POST["team_number"])
+if (isset($_POST["user_name"])
     && isset($_POST["user_password"]) && isset($_POST["user_password_confirm"])
     && $_POST["user_password"] == $_POST["user_password_confirm"] && isset($_POST["user_number"])) {
     if (strlen($_POST["user_password"]) < 2) {
@@ -18,7 +18,7 @@ if (isset($_POST["user_name"]) && isset($_POST["team_number"])
         if (isset($_POST["user_email"])) {
             $userEmail = $_POST["user_email"];
         }
-        $success = addUser($db, $_POST["user_number"], $_POST["user_name"], $_POST["team_number"],
+        $success = addUser($db, $_POST["user_number"], $_POST["user_name"],
                            $userEmail, $_POST["user_password"], isset($_POST["user_mentor"]), 0,
                             getSessionKey());
         if ($success) {

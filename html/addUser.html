@@ -6,9 +6,6 @@
             <label for="user_name">Name:</label>
             <input class="form-control" id="user_name" ng-model="formData.user_name" type="text">
 
-            <label for="team_number">Team Number:</label>
-            <input class="form-control" id="team_number" ng-model="formData.team_number" ng-change="isNumTaken()" type="number">
-
             <label for="user_number">User Number:</label>
             <label style="color:red" ng-if="idTaken">This ID is taken.</label>
             <input class="form-control" id="user_number" ng-model="formData.user_number" ng-change="isNumTaken()" type="number">

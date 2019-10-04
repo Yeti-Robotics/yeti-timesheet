@@ -1,13 +1,15 @@
 -- phpMyAdmin SQL Dump
--- version 4.5.1
--- http://www.phpmyadmin.net
+-- version 4.8.5
+-- https://www.phpmyadmin.net/
 --
--- Host: 127.0.0.1
--- Generation Time: Feb 13, 2016 at 11:12 PM
--- Server version: 10.1.8-MariaDB
--- PHP Version: 5.6.14
+-- Host: mysql.yetirobotics.org
+-- Generation Time: Oct 04, 2019 at 06:52 AM
+-- Server version: 5.7.25-log
+-- PHP Version: 7.1.22
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+SET AUTOCOMMIT = 0;
+START TRANSACTION;
 SET time_zone = "+00:00";
 
 
@@ -19,8 +21,6 @@ SET time_zone = "+00:00";
 --
 -- Database: `timesheet`
 --
-CREATE DATABASE IF NOT EXISTS `timesheet` DEFAULT CHARACTER SET latin1 COLLATE latin1_swedish_ci;
-USE `timesheet`;
 
 -- --------------------------------------------------------
 
@@ -32,7 +32,6 @@ DROP TABLE IF EXISTS `session`;
 CREATE TABLE `session` (
   `session_id` int(11) NOT NULL,
   `user_id` int(20) NOT NULL,
-#   `user_id` varchar(20) NOT NULL,
   `session_key` varchar(64) NOT NULL,
   `session_timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
@@ -59,7 +58,6 @@ DROP TABLE IF EXISTS `timelog`;
 CREATE TABLE `timelog` (
   `timelog_id` int(11) NOT NULL,
   `user_id` int(20) NOT NULL,
-#   `user_id` varchar(20) NOT NULL,
   `timelog_timein` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `timelog_timeout` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
@@ -73,9 +71,8 @@ CREATE TABLE `timelog` (
 DROP TABLE IF EXISTS `user`;
 CREATE TABLE `user` (
   `user_id` int(20) NOT NULL,
-#   `user_id` varchar(20) NOT NULL,
   `user_name` varchar(200) NOT NULL,
-  `team_number` int(11) NOT NULL,
+  `team_number` int(11) NOT NULL DEFAULT '3506',
   `user_email` varchar(200) NOT NULL,
   `user_password` varchar(32) NOT NULL,
   `user_admin` tinyint(1) NOT NULL,
@@ -124,20 +121,23 @@ ALTER TABLE `user`
 --
 
 --
--- AUTO_INCREMENT for table `user`
---
-ALTER TABLE `user`
-  MODIFY `user_id` int(20) NOT NULL AUTO_INCREMENT;
---
 -- AUTO_INCREMENT for table `session`
 --
 ALTER TABLE `session`
   MODIFY `session_id` int(11) NOT NULL AUTO_INCREMENT;
+
 --
 -- AUTO_INCREMENT for table `timelog`
 --
 ALTER TABLE `timelog`
   MODIFY `timelog_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `user`
+--
+ALTER TABLE `user`
+  MODIFY `user_id` int(20) NOT NULL AUTO_INCREMENT;
+
 --
 -- Constraints for dumped tables
 --
@@ -159,6 +159,7 @@ ALTER TABLE `timelog`
 --
 ALTER TABLE `user`
   ADD CONSTRAINT `user_ibfk_1` FOREIGN KEY (`team_number`) REFERENCES `team` (`team_number`) ON DELETE CASCADE ON UPDATE CASCADE;
+COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
